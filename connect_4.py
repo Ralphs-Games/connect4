@@ -51,8 +51,8 @@ lightblue = (0,255,255)
 #yellow = (240,240,0)
 
 # not so bright colors:
-blue   = (50,70,220)
-red    = (220,0,0)
+blue   = (40,40,220)
+red    = (230,0,0)
 yellow = (240,240,0)
 green  = (0,200,0)
 
@@ -64,9 +64,9 @@ pygame.display.set_caption("Connect 4")
 
 # why isn't this working?
 #gameIcon = pygame.image.load('images/nfl-league-logo-100x100.png').convert_alpha()
-gameIcon = pygame.image.load('images/connect_four_icon2.png').convert_alpha()
+#gameIcon = pygame.image.load('images/connect_four_icon2.png').convert_alpha()
 #gameIcon = pygame.image.load('./images/connect_four_icon.png').convert_alpha()
-pygame.display.set_icon(gameIcon)
+#pygame.display.set_icon(gameIcon)
 
 ### board setup ###
 boardRows = 6
@@ -99,7 +99,7 @@ dropSound = pygame.mixer.Sound('./sounds/sfx_sounds_impact6.wav')
 honk3Sound = pygame.mixer.Sound('./sounds/honk3.wav')
 
 # debug:
-debugHilite = 1
+debugHilite = False
 
 def drawRect(rect_x, rect_y, rect_w, rect_h, color):
     pygame.draw.rect(gameDisplay, color, [rect_x, rect_y, rect_w, rect_h])
@@ -851,7 +851,7 @@ def endgame():
             gameDisplay.blit(text, ((display_width/2)-190,25))
         elif winner == 2:
             textmsg = "It's a draw!!"
-            text = font.render(textmsg,1,colorPlayer2)
+            text = font.render(textmsg,1,white)
             gameDisplay.blit(text, ((display_width/2)-190,25))
 
         font = pygame.font.SysFont('comicsansms', 40)  # comicsansms arial
@@ -930,12 +930,13 @@ def computer_ai():
     # from here on use play algo:
     # move to next item if first not found, etc.
     # 
+    # (not all of this has been implemented yet...)
     # 1. ck for ai 3iar to win by 4th
     # 2. ck user 3iar, 2iar, block. If 2iar, favor blocks that create 2/3iar for ai
     # 3. ck ai 2iar to make 3iar (two at a time if possible)(favor moves that block user)
     # 4. ck ai to make 2iar (two at a time if possible)(favor moves that block user)
     # 
-    # point system for moves:
+    # ?? point system for moves:
     # 100 - to win
     # 50  - to block user 3iar
     # 15  - to make ai 3iar
@@ -956,7 +957,6 @@ def computer_ai():
     print("leftRight = ",leftRight)   # debug
 
     global debugHilite
-    debugHilite = 1
 
     numInRow = 0
 
@@ -1066,8 +1066,8 @@ def computer_ai():
                 if numInRow == -2:  # ai
                     print("numInRow = ",numInRow)
                     # debug: hilite winning discs (remove this later)
-                    squaresArray[i*boardCols + j].hilite = True
-                    squaresArray[i*boardCols + j+1].hilite = True
+                    squaresArray[i*boardCols + j].hilite = debugHilite
+                    squaresArray[i*boardCols + j+1].hilite = debugHilite
                     if 0 <= (j - 1):
                         print("ai 2iar rows: j-1")  # debug
                         if squares2dArray[i,(j - 1)] == 0:  # open to make 3iar
@@ -1094,8 +1094,8 @@ def computer_ai():
                 elif numInRow == 2:    # human
                     print("numInRow = ",numInRow)
                     # debug: hilite winning discs (remove this later)
-                    squaresArray[i*boardCols + j].hilite = True
-                    squaresArray[i*boardCols + j+1].hilite = True
+                    squaresArray[i*boardCols + j].hilite = debugHilite
+                    squaresArray[i*boardCols + j+1].hilite = debugHilite
                     if 0 <= (j - 1):
                         print("ai 2iar rows: j-1")  # debug
                         if squares2dArray[i,(j - 1)] == 0:  # open to make 3iar
@@ -1127,8 +1127,8 @@ def computer_ai():
                 if numInRow == -2:  # ai
                     print("numInRow = ",numInRow)
                     # debug: hilite winning discs (remove this later)
-                    squaresArray[i*boardCols + j].hilite = True
-                    squaresArray[(i+1)*boardCols + j].hilite = True
+                    squaresArray[i*boardCols + j].hilite = debugHilite
+                    squaresArray[(i+1)*boardCols + j].hilite = debugHilite
                     if 0 <= (i - 1):
                         print("ai 2iar cols: i-1")
                         if squares2dArray[i - 1,j] == 0:  # open to make 3iar
@@ -1138,8 +1138,8 @@ def computer_ai():
                 elif numInRow == 2:    # human
                     print("numInRow = ",numInRow)
                     # debug: hilite winning discs (remove this later)
-                    squaresArray[i*boardCols + j].hilite = True
-                    squaresArray[(i+1)*boardCols + j].hilite = True
+                    squaresArray[i*boardCols + j].hilite = debugHilite
+                    squaresArray[(i+1)*boardCols + j].hilite = debugHilite
                     if 0 <= (i - 1):
                         print("ai 2iar cols: i-1")
                         if squares2dArray[i - 1,j] == 0:  # open to make 3iar
@@ -1155,8 +1155,8 @@ def computer_ai():
                 if numInRow == -2:  # ai
                     print("numInRow = ",numInRow)
                     # debug: hilite winning discs (remove this later)
-                    squaresArray[i*boardCols + j].hilite = True
-                    squaresArray[(i+1)*boardCols + j+1].hilite = True
+                    squaresArray[i*boardCols + j].hilite = debugHilite
+                    squaresArray[(i+1)*boardCols + j+1].hilite = debugHilite
                     if 0 <= (i - 1):
                         if 0 <= (j - 1):
                             print("ai 2iar diagonals right: j-1")  # debug
@@ -1181,8 +1181,8 @@ def computer_ai():
                 elif numInRow == 2:    # human
                     print("numInRow = ",numInRow)
                     # debug: hilite winning discs (remove this later)
-                    squaresArray[i*boardCols + j].hilite = True
-                    squaresArray[(i+1)*boardCols + j+1].hilite = True
+                    squaresArray[i*boardCols + j].hilite = debugHilite
+                    squaresArray[(i+1)*boardCols + j+1].hilite = debugHilite
                     if 0 <= (i - 1):
                         if 0 <= (j - 1):
                             print("ai 2iar diagonals right: j-1")  # debug
@@ -1212,8 +1212,8 @@ def computer_ai():
                 if numInRow == -2:  # ai
                     print("numInRow = ",numInRow)
                     # debug: hilite winning discs (remove this later)
-                    squaresArray[i*boardCols + j].hilite = True
-                    squaresArray[(i+1)*boardCols + j-1].hilite = True
+                    squaresArray[i*boardCols + j].hilite = debugHilite
+                    squaresArray[(i+1)*boardCols + j-1].hilite = debugHilite
                     if 0 <= (i - 1):
                         if (j + 1) < boardCols:
                             print("ai 2iar diagonals left: i-1")  # debug
@@ -1239,8 +1239,8 @@ def computer_ai():
                     danger = 3
                     print("numInRow = ",numInRow)
                     # debug: hilite winning discs (remove this later)
-                    squaresArray[i*boardCols + j].hilite = True
-                    squaresArray[(i+1)*boardCols + j-1].hilite = True
+                    squaresArray[i*boardCols + j].hilite = debugHilite
+                    squaresArray[(i+1)*boardCols + j-1].hilite = debugHilite
                     if 0 <= (i - 1):
                         if (j + 1) < boardCols:
                             print("ai 2iar diagonals left: i-1")  # debug
@@ -1279,9 +1279,9 @@ def computer_ai():
                     if 0 <= (j - 1):
                         print("ai 3iar rows: j-1")  # debug
                         if squares2dArray[i,(j - 1)] == 0:  # open to make 4iar
-                            squaresArray[i*boardCols + j].hilite = True
-                            squaresArray[i*boardCols + j+1].hilite = True
-                            squaresArray[i*boardCols + j+2].hilite = True
+                            squaresArray[i*boardCols + j].hilite = debugHilite
+                            squaresArray[i*boardCols + j+1].hilite = debugHilite
+                            squaresArray[i*boardCols + j+2].hilite = debugHilite
                             if i == 5:
                                 playColumn = j - 1
                                 print("ai 3iar rows: playColumn = ",playColumn)  # debug
@@ -1294,9 +1294,9 @@ def computer_ai():
                     if (j + 3) < boardCols:
                         print("ai 3iar rows: j+3")  # debug
                         if squares2dArray[i,(j + 3)] == 0:  # open to make 4iar
-                            squaresArray[i*boardCols + j].hilite = True
-                            squaresArray[i*boardCols + j+1].hilite = True
-                            squaresArray[i*boardCols + j+2].hilite = True
+                            squaresArray[i*boardCols + j].hilite = debugHilite
+                            squaresArray[i*boardCols + j+1].hilite = debugHilite
+                            squaresArray[i*boardCols + j+2].hilite = debugHilite
                             if i == 5:
                                 playColumn = j + 3
                                 print("ai 3iar rows: playColumn = ",playColumn)  # debug
@@ -1315,9 +1315,9 @@ def computer_ai():
                     if 0 <= (j - 1):
                         print("ai 3iar rows: j-1")  # debug
                         if squares2dArray[i,(j - 1)] == 0:  # open to block 4iar
-                            squaresArray[i*boardCols + j].hilite = True
-                            squaresArray[i*boardCols + j+1].hilite = True
-                            squaresArray[i*boardCols + j+2].hilite = True
+                            squaresArray[i*boardCols + j].hilite = debugHilite
+                            squaresArray[i*boardCols + j+1].hilite = debugHilite
+                            squaresArray[i*boardCols + j+2].hilite = debugHilite
                             if i == 5:
                                 playColumn = j - 1
                                 run_ai = False
@@ -1328,9 +1328,9 @@ def computer_ai():
                     if (j + 3) < boardCols:
                         print("ai 3iar rows: j+3")
                         if squares2dArray[i,(j + 3)] == 0:  # open to block 4iar
-                            squaresArray[i*boardCols + j].hilite = True
-                            squaresArray[i*boardCols + j+1].hilite = True
-                            squaresArray[i*boardCols + j+2].hilite = True
+                            squaresArray[i*boardCols + j].hilite = debugHilite
+                            squaresArray[i*boardCols + j+1].hilite = debugHilite
+                            squaresArray[i*boardCols + j+2].hilite = debugHilite
                             if i == 5:
                                 playColumn = j + 3
                                 print("ai 3iar colsrows: playColumn = ",playColumn)  # debug
@@ -1355,9 +1355,9 @@ def computer_ai():
                     if 0 <= (i - 1):
                         print("ai 3iar cols: i-1")
                         if squares2dArray[i - 1,j] == 0:  # open to make 4iar
-                            squaresArray[i*boardCols + j].hilite = True
-                            squaresArray[(i+1)*boardCols + j].hilite = True
-                            squaresArray[(i+2)*boardCols + j].hilite = True
+                            squaresArray[i*boardCols + j].hilite = debugHilite
+                            squaresArray[(i+1)*boardCols + j].hilite = debugHilite
+                            squaresArray[(i+2)*boardCols + j].hilite = debugHilite
                             playColumn = j
                             print("ai 3iar cols: playColumn = ",playColumn)
                             run_ai = False
@@ -1370,9 +1370,9 @@ def computer_ai():
                     if 0 <= (i - 1):
                         print("ai 3iar cols: i-1")
                         if squares2dArray[i - 1,j] == 0:  # open to make 4iar
-                            squaresArray[i*boardCols + j].hilite = True
-                            squaresArray[(i+1)*boardCols + j].hilite = True
-                            squaresArray[(i+2)*boardCols + j].hilite = True
+                            squaresArray[i*boardCols + j].hilite = debugHilite
+                            squaresArray[(i+1)*boardCols + j].hilite = debugHilite
+                            squaresArray[(i+2)*boardCols + j].hilite = debugHilite
                             playColumn = j
                             print("ai 3iar cols: playColumn = ",playColumn)
                             run_ai = False
@@ -1392,9 +1392,9 @@ def computer_ai():
                         if 0 <= (j - 1):
                             print("ai 3iar diagonals right: j-1")  # debug
                             if squares2dArray[(i - 1),(j - 1)] == 0:  # open to make 4iar
-                                squaresArray[i*boardCols + j].hilite = True
-                                squaresArray[(i+1)*boardCols + j+1].hilite = True
-                                squaresArray[(i+2)*boardCols + j+2].hilite = True
+                                squaresArray[i*boardCols + j].hilite = debugHilite
+                                squaresArray[(i+1)*boardCols + j+1].hilite = debugHilite
+                                squaresArray[(i+2)*boardCols + j+2].hilite = debugHilite
                                 if squares2dArray[i,(j - 1)] != 0:  # support to make 4iar
                                     playColumn = j - 1
                                     print("ai 3iar diagonals right: playColumn = ",playColumn)  # debug
@@ -1403,9 +1403,9 @@ def computer_ai():
                         if (j + 3) < boardCols:
                             print("ai 3iar diagonals right: j+3")  # debug
                             if squares2dArray[(i + 3),(j + 3)] == 0:  # open to make 4iar
-                                squaresArray[i*boardCols + j].hilite = True
-                                squaresArray[(i+1)*boardCols + j+1].hilite = True
-                                squaresArray[(i+2)*boardCols + j+2].hilite = True
+                                squaresArray[i*boardCols + j].hilite = debugHilite
+                                squaresArray[(i+1)*boardCols + j+1].hilite = debugHilite
+                                squaresArray[(i+2)*boardCols + j+2].hilite = debugHilite
                                 if (i + 3) == 5:
                                     playColumn = j + 3
                                     print("ai 3iar diagonals right: playColumn = ",playColumn)  # debug
@@ -1426,9 +1426,9 @@ def computer_ai():
                         if 0 <= (j - 1):
                             print("ai 3iar diagonals right: j-1")  # debug
                             if squares2dArray[(i - 1),(j - 1)] == 0:  # open to make 4iar
-                                squaresArray[i*boardCols + j].hilite = True
-                                squaresArray[(i+1)*boardCols + j+1].hilite = True
-                                squaresArray[(i+2)*boardCols + j+2].hilite = True
+                                squaresArray[i*boardCols + j].hilite = debugHilite
+                                squaresArray[(i+1)*boardCols + j+1].hilite = debugHilite
+                                squaresArray[(i+2)*boardCols + j+2].hilite = debugHilite
                                 if squares2dArray[i,(j - 1)] != 0:  # support to make 4iar
                                     playColumn = j - 1
                                     print("ai 3iar diagonals right: playColumn = ",playColumn)  # debug
@@ -1437,9 +1437,9 @@ def computer_ai():
                         if (j + 3) < boardCols:
                             print("ai 3iar diagonals right: j+3")  # debug
                             if squares2dArray[(i + 3),(j + 3)] == 0:  # open to make 4iar
-                                squaresArray[i*boardCols + j].hilite = True
-                                squaresArray[(i+1)*boardCols + j+1].hilite = True
-                                squaresArray[(i+2)*boardCols + j+2].hilite = True
+                                squaresArray[i*boardCols + j].hilite = debugHilite
+                                squaresArray[(i+1)*boardCols + j+1].hilite = debugHilite
+                                squaresArray[(i+2)*boardCols + j+2].hilite = debugHilite
                                 if (i + 3) == 5:
                                     playColumn = j + 3
                                     print("ai 3iar diagonals right: playColumn = ",playColumn)  # debug
@@ -1458,9 +1458,9 @@ def computer_ai():
                 if numInRow == -3:  # ai
                     print("numInRow = ",numInRow)  # debug
                     # debug: hilite winning discs (remove this later)
-                    squaresArray[i*boardCols + j].hilite = True
-                    squaresArray[(i+1)*boardCols + j-1].hilite = True
-                    squaresArray[(i+2)*boardCols + j-2].hilite = True
+                    squaresArray[i*boardCols + j].hilite = debugHilite
+                    squaresArray[(i+1)*boardCols + j-1].hilite = debugHilite
+                    squaresArray[(i+2)*boardCols + j-2].hilite = debugHilite
                     if 0 <= (i - 1):
                         if (j + 1) < boardCols:
                             print("ai 3iar diagonals left: i-1")  # debug
@@ -1486,9 +1486,9 @@ def computer_ai():
                 elif numInRow == 3:    # human
                     print("numInRow = ",numInRow)  # debug
                     # debug: hilite winning discs (remove this later)
-                    squaresArray[i*boardCols + j].hilite = True
-                    squaresArray[(i+1)*boardCols + j-1].hilite = True
-                    squaresArray[(i+2)*boardCols + j-2].hilite = True
+                    squaresArray[i*boardCols + j].hilite = debugHilite
+                    squaresArray[(i+1)*boardCols + j-1].hilite = debugHilite
+                    squaresArray[(i+2)*boardCols + j-2].hilite = debugHilite
                     if 0 <= (i - 1):
                         if (j + 1) < boardCols:
                             print("ai 3iar diagonals left: i-1")  # debug
@@ -1556,6 +1556,7 @@ def computer_ai():
         run_ai = False
 
 #def computer_ai(): end
+
 
 def fullColunnCheck():
 
