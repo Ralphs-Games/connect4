@@ -5,7 +5,7 @@
 # voyages that his crew gave it that name
 ###################################################
 
-# 2/15/22, 9:20 PM
+# 2/18/22, 10:04 PM
 
 '''
 to do:
@@ -15,9 +15,7 @@ _screen <= screen
 alternate player that goes first
 _keep stats on # wins per player
 
-??
-#quit()
-sys.exit()
+_quit() -> sys.exit()
 
 _fix full board draw checking
 _fix ai drops into full column
@@ -40,6 +38,7 @@ robot arm??
 import pygame
 import time
 import random
+import sys
 import os
 import numpy as np
 
@@ -412,7 +411,8 @@ instructions = ["*** Instructions ***"
 ,"The objective of the game is to be the first to form a horizontal, vertical,"
 ,"or diagonal line of four of one's own discs."
 ,""
-,"You may also play against the computer as a single player. The computer always moves first."
+,"You may also play against the computer as a single player."
+,"The computer always moves first."
 ,""
 ,"Position the mouse at the top square of the column you want to choose"
 ,"and then click to drop a piece down it."]
@@ -422,7 +422,7 @@ def displayInstructions():
     pygame.event.clear()  # This will clear any pending events (keys held down or released) from the previous run
     run_di = True
 
-    yesButton = Button((255,255,0), 800,804,40,40,'Y')
+    yesButton = Button((255,255,0), 740,804,40,40,'Y')
 
     while run_di:
 
@@ -431,11 +431,11 @@ def displayInstructions():
 
         for i in range(len(instructions)):
             text = font.render(instructions[i],1,white)
-            screen.blit(text, (400,40*i+10))
+            screen.blit(text, (340,40*i+10))
 
         text = "Are you ready to play?"
         text = font.render(text,1,white)
-        screen.blit(text, (400,800))
+        screen.blit(text, (340,800))
     
         yesButton.draw(screen,(0,0,0))  #surface, outline
         pygame.display.update()
@@ -445,7 +445,7 @@ def displayInstructions():
             if event.type == pygame.QUIT:
                 run_di = False
                 pygame.quit()
-                quit()
+                sys.exit()
     
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_y:
@@ -531,7 +531,7 @@ def game_intro():
                 if event.type == pygame.QUIT:
                     run = False
                     pygame.quit()
-                    quit()
+                    sys.exit()
 
                 #if event.type == pygame.KEYDOWN:
                     #if event.key == pygame.K_LEFT:
@@ -592,7 +592,7 @@ def game_intro():
                 if event.type == pygame.QUIT:
                     run_setup = False
                     pygame.quit()
-                    quit()
+                    sys.exit()
 
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_y]:  # supports upper & lower case
@@ -656,7 +656,7 @@ def game_intro():
                 if event.type == pygame.QUIT:
                     run_setup = False
                     pygame.quit()
-                    quit()
+                    sys.exit()
 
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_r]:  # supports upper & lower case
@@ -873,6 +873,9 @@ def winnerCheck():
 
 def endgame():
 
+    clock.tick(10)
+#    clock.tick(30)
+
     global winsPlayer1
     global winsPlayer2
     
@@ -927,7 +930,7 @@ def endgame():
             if event.type == pygame.QUIT:
                 run_end = False
                 pygame.quit()
-                quit()
+                sys.exit()
             keys = pygame.key.get_pressed()
             if keys[pygame.K_y]:  # supports upper & lower case
                 run_end = False
@@ -938,7 +941,7 @@ def endgame():
             if keys[pygame.K_n]:  # supports upper & lower case
                 run_end = False
                 pygame.quit()
-                quit()
+                sys.exit()
             pos = pygame.mouse.get_pos()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if yesButton.isOver(pos):
@@ -950,7 +953,7 @@ def endgame():
                 if noButton.isOver(pos):
                     run_end = False
                     pygame.quit()
-                    quit()
+                    sys.exit()
             if event.type == pygame.MOUSEMOTION:
                 if yesButton.isOver(pos):
                     yesButton.color = (0,255,0)
@@ -1764,7 +1767,7 @@ def game_loop():
                 if event.type == pygame.QUIT:
                     run_game = False
                     pygame.quit()
-                    quit()
+                    sys.exit()
                 if event.type == pygame.MOUSEMOTION:
                     for i in range (7):
                         squaresArray[i].hilite = False
