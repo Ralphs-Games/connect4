@@ -1,15 +1,29 @@
-# Connect-4 game (aka The Captain's Mistress)
+###################################################
+# Connect-4 (aka The Captain's Mistress)
+# The Captain's Mistress is supposedly the game
+# that so engrossed Captain Cook during his long
+# voyages that his crew gave it that name
+###################################################
 
-# 2/8/22, 11:41 PM
+# 2/15/22, 9:20 PM
 
 '''
 to do:
 
-fix full board draw checking
-fix ai drops into full column
-fix ai moves when no 3iar or 4iar ?
+_screen <= screen
+
+alternate player that goes first
+_keep stats on # wins per player
+
+??
+#quit()
+sys.exit()
+
+_fix full board draw checking
+_fix ai drops into full column
+_? fix ai moves when no 3iar or 4iar ?
 AI for single player mode (in process)
-    add 2iar strategy code
+    _add 2iar strategy code
     look for gaps? XX.X
 
 _2d array (but can't hold class instances)
@@ -34,10 +48,23 @@ os.environ['SDL_VIDEO_CENTERED'] = '1'
 
 pygame.init()
 
-random.seed()  # uses system time as a seed
-#random.randint(a, b)   #Return a random integer N such that a <= N <= b
+display_width = 1920
+display_height = 1080
+
+screen = pygame.display.set_mode((display_width,display_height))
+pygame.display.set_caption("Connect 4")
+
+# why isn't this working?
+#gameIcon = pygame.image.load('images/nfl-league-logo-100x100.png').convert_alpha()
+#gameIcon = pygame.image.load('images/connect_four_icon2.png').convert_alpha()
+#gameIcon = pygame.image.load('./images/connect_four_icon.png').convert_alpha()
+#pygame.display.set_icon(gameIcon)
 
 clock = pygame.time.Clock()
+
+random.seed()  # uses system time as a seed
+
+#random.randint(a, b)   #Return a random integer N such that a <= N <= b
 
 ### display setup & colors ###
 black = (0,0,0)
@@ -55,18 +82,6 @@ blue   = (40,40,220)
 red    = (230,0,0)
 yellow = (240,240,0)
 green  = (0,200,0)
-
-display_width = 1920
-display_height = 1080
-
-gameDisplay = pygame.display.set_mode((display_width,display_height))
-pygame.display.set_caption("Connect 4")
-
-# why isn't this working?
-#gameIcon = pygame.image.load('images/nfl-league-logo-100x100.png').convert_alpha()
-#gameIcon = pygame.image.load('images/connect_four_icon2.png').convert_alpha()
-#gameIcon = pygame.image.load('./images/connect_four_icon.png').convert_alpha()
-#pygame.display.set_icon(gameIcon)
 
 ### board setup ###
 boardRows = 6
@@ -89,11 +104,14 @@ winner     = 0  # 1 or 2, winning player
 playCount  = 0  # a play is one round, i.e. computer and human each taking a turn
 playColumn = 3  # ai always picks this on first move
 leftRight  = 0  # for random ai movement
+
 # can be changed at game start:
 colorPlayer1 = red
 colorPlayer2 = yellow
 
 # stats? num victories by each player/computer?
+winsPlayer1 = 0
+winsPlayer2 = 0
 
 dropSound = pygame.mixer.Sound('./sounds/sfx_sounds_impact6.wav')
 honk3Sound = pygame.mixer.Sound('./sounds/honk3.wav')
@@ -102,10 +120,10 @@ honk3Sound = pygame.mixer.Sound('./sounds/honk3.wav')
 debugHilite = False
 
 def drawRect(rect_x, rect_y, rect_w, rect_h, color):
-    pygame.draw.rect(gameDisplay, color, [rect_x, rect_y, rect_w, rect_h])
+    pygame.draw.rect(screen, color, [rect_x, rect_y, rect_w, rect_h])
 
 def drawCirle(x, y, radius, color, width=0):   # x,y is center. If width > 1, is line thickness, else filled. 
-    pygame.draw.circle(gameDisplay, color, (x, y), radius, width)   # circle(surface, color, center, radius) 
+    pygame.draw.circle(screen, color, (x, y), radius, width)   # circle(surface, color, center, radius) 
 
 
 ## no longer using this, see boardSquare class
@@ -274,9 +292,9 @@ def update2dArray():
     #print("")
 
 
-# draw game playing surface, including squares with disc & hilite if set
 def redrawWindow():
-    gameDisplay.fill(black)
+    # draw game playing surface, including squares with disc & hilite if set
+    screen.fill(black)
     for i in range(boardRows*boardCols):
         squaresArray[i].draw()
         #def drawSquare(x, y, size, color, disc):
@@ -285,15 +303,41 @@ def redrawWindow():
     textmsg = "Connect 4"
     font = pygame.font.SysFont('comicsansms', 70)  # comicsansms arial
     text = font.render(textmsg,1,white)
-    gameDisplay.blit(text, (30,10))
+    screen.blit(text, (30,10))
 
     textmsg = "'The Captain's Mistress'"
     font = pygame.font.SysFont('comicsansms', 30)  # comicsansms arial
     text = font.render(textmsg,1,white)
-    gameDisplay.blit(text, (30,110))
+    screen.blit(text, (30,110))
+
+    font = pygame.font.SysFont('comicsansms', 30)  # comicsansms arial
+
+    textmsg = "Player #1 Score:"
+    text = font.render(textmsg,1,colorPlayer1)
+    screen.blit(text, (1560,40))
+#    screen.blit(text, (30,150))
+#    print("winsPlayer1 =",winsPlayer1)
+    textmsg = str(winsPlayer1)
+    text = font.render(textmsg,1,colorPlayer1)
+    screen.blit(text, (1820,40))
+#    screen.blit(text, (50,150))
+
+    #randNumLabel = myFont.render("You have rolled:", 1, black)
+    #diceDisplay = myFont.render(str(diceRoll), 1, black)
+
+    textmsg = "Player #2 Score:"
+    text = font.render(textmsg,1,colorPlayer2)
+    screen.blit(text, (1560,80))
+#    screen.blit(text, (30,200))
+#    print("winsPlayer2 =",winsPlayer2)
+    textmsg = str(winsPlayer2)
+    text = font.render(textmsg,1,colorPlayer2)
+    screen.blit(text, (1820,80))
+#    screen.blit(text, (50,200))
 
     #update2dArray()
     pygame.display.update()
+
 
 
 class Button():
@@ -306,16 +350,16 @@ class Button():
         self.text = text
 
     #Call this method to draw the button on the screen
-    def draw(self,gameDisplay,outline=None):
+    def draw(self,screen,outline=None):
         if outline:
-            pygame.draw.rect(gameDisplay, outline, (self.x-2,self.y-2,self.width+4,self.height+4),0)
+            pygame.draw.rect(screen, outline, (self.x-2,self.y-2,self.width+4,self.height+4),0)
             
-        pygame.draw.rect(gameDisplay, self.color, (self.x,self.y,self.width,self.height),0)
+        pygame.draw.rect(screen, self.color, (self.x,self.y,self.width,self.height),0)
         
         if self.text != '':
             font = pygame.font.SysFont('arial', 40)
             text = font.render(self.text, 1, black)
-            gameDisplay.blit(text, (self.x + (self.width/2 - text.get_width()/2), self.y + (self.height/2 - text.get_height()/2)))
+            screen.blit(text, (self.x + (self.width/2 - text.get_width()/2), self.y + (self.height/2 - text.get_height()/2)))
 
     #pos is the mouse position or a tuple of (x,y) coordinates
     def isOver(self, pos):
@@ -334,16 +378,16 @@ class ButtonCir():
         self.text = text
 
     #call this method to draw the button on the screen
-    def draw(self,gameDisplay,outline=None):
+    def draw(self,screen,outline=None):
         if outline:
-            pygame.draw.circle(gameDisplay, outline, (self.x, self.y), self.radius+2)   # circle(surface, color, center, radius) 
-        pygame.draw.circle(gameDisplay, self.color, (self.x, self.y), self.radius)   # circle(surface, color, center, radius) 
+            pygame.draw.circle(screen, outline, (self.x, self.y), self.radius+2)   # circle(surface, color, center, radius) 
+        pygame.draw.circle(screen, self.color, (self.x, self.y), self.radius)   # circle(surface, color, center, radius) 
         
         if self.text != '':
             font = pygame.font.SysFont('arial', 40)
             text = font.render(self.text, 1, black)
-            gameDisplay.blit(text,(self.x-11,self.y-22))
-            #gameDisplay.blit(text, (self.x + (self.radius/2 - text.get_width()/2), self.y + (self.radius/2 - text.get_height()/2)))
+            screen.blit(text,(self.x-11,self.y-22))
+            #screen.blit(text, (self.x + (self.radius/2 - text.get_width()/2), self.y + (self.radius/2 - text.get_height()/2)))
 
     #pos is the mouse position or a tuple of (x,y) coordinates
     def isOver(self, pos):
@@ -382,18 +426,18 @@ def displayInstructions():
 
     while run_di:
 
-        gameDisplay.fill(black)
+        screen.fill(black)
         font = pygame.font.SysFont('arial', 40)  # comicsansms arial
 
         for i in range(len(instructions)):
             text = font.render(instructions[i],1,white)
-            gameDisplay.blit(text, (400,40*i+10))
+            screen.blit(text, (400,40*i+10))
 
         text = "Are you ready to play?"
         text = font.render(text,1,white)
-        gameDisplay.blit(text, (400,800))
+        screen.blit(text, (400,800))
     
-        yesButton.draw(gameDisplay,(0,0,0))  #surface, outline
+        yesButton.draw(screen,(0,0,0))  #surface, outline
         pygame.display.update()
 
         for event in pygame.event.get():
@@ -476,10 +520,10 @@ def game_intro():
             font = pygame.font.SysFont('comicsansms', 40)  # comicsansms arial
             #font = pygame.font.SysFont('arial', 30)
             text = font.render(textmsg,1,white)
-            gameDisplay.blit(text, ((display_width/2)-320,40))
+            screen.blit(text, ((display_width/2)-320,40))
 
-            yesButton.draw(gameDisplay,(0,0,0))  #surface, outline
-            noButton.draw(gameDisplay,(0,0,0))  #surface, outline
+            yesButton.draw(screen,(0,0,0))  #surface, outline
+            noButton.draw(screen,(0,0,0))  #surface, outline
             pygame.display.update()
 
             for event in pygame.event.get():
@@ -535,13 +579,13 @@ def game_intro():
             font = pygame.font.SysFont('comicsansms', 40)  # comicsansms arial
             #font = pygame.font.SysFont('arial', 30)
             text = font.render(textmsg,1,white)
-            gameDisplay.blit(text, ((display_width/2)-320,40))
+            screen.blit(text, ((display_width/2)-320,40))
 
             #yesButton = ButtonCir((255,255,0), 1200,70,25,'Y')
             #noButton  = ButtonCir((255,255,0), 1270,70,25,'N')
 
-            yesButton.draw(gameDisplay,(0,0,0))  #surface, outline
-            noButton.draw(gameDisplay,(0,0,0))  #surface, outline
+            yesButton.draw(screen,(0,0,0))  #surface, outline
+            noButton.draw(screen,(0,0,0))  #surface, outline
             pygame.display.update()
     
             for event in pygame.event.get():
@@ -597,15 +641,15 @@ def game_intro():
             font = pygame.font.SysFont('comicsansms', 40)  # comicsansms arial
             #font = pygame.font.SysFont('arial', 30)
             text = font.render(textmsg,1,white)
-            gameDisplay.blit(text, ((display_width/2)-350,40))
+            screen.blit(text, ((display_width/2)-350,40))
 
             #redButton = ButtonCir((255,0,0), 1200,70,25,'')
             #yelButton = ButtonCir((255,255,0), 1270,70,25,'')
             redButton = Button((255,0,0), 1180,50,40,40,'R')
             yelButton = Button((255,255,0), 1250,50,40,40,'Y')
 
-            redButton.draw(gameDisplay,(0,0,0))  #surface, outline
-            yelButton.draw(gameDisplay,(0,0,0))  #surface, outline
+            redButton.draw(screen,(0,0,0))  #surface, outline
+            yelButton.draw(screen,(0,0,0))  #surface, outline
             pygame.display.update()
     
             for event in pygame.event.get():
@@ -660,6 +704,7 @@ def game_intro():
     game_loop()   # experimental... but it seems to work!
 
 #def game_intro(): end
+
 
 def dropDisc(column,color):
     print("dropDisc")
@@ -828,39 +873,54 @@ def winnerCheck():
 
 def endgame():
 
+    global winsPlayer1
+    global winsPlayer2
+    
     run_end = True
-    yesButton = Button((255,255,0), 1750,50,40,40,'Y')
-    noButton  = Button((255,255,0), 1820,50,40,40,'N')
+    yesButton = Button((255,255,0), 1180,50,40,40,'Y')
+    noButton  = Button((255,255,0), 1250,50,40,40,'N')
+#    yesButton = Button((255,255,0), 1750,50,40,40,'Y')
+#    noButton  = Button((255,255,0), 1820,50,40,40,'N')
     redrawWindow()
     print("endgame winner = ",winner)
 
+#    while run_end:
+
+    font = pygame.font.SysFont('comicsansms', 50)  # comicsansms arial
+
+    if winner == 1:
+        winsPlayer2 = winsPlayer2 + 1
+        textmsg = "Player #2 wins!!!"
+        text = font.render(textmsg,1,colorPlayer2)
+        screen.blit(text, ((display_width/2)-190,25))
+    elif winner == -1:
+        winsPlayer1 = winsPlayer1 + 1
+        if numPlayers == 1:
+            textmsg = "Computer wins!!!"
+        elif numPlayers == 2:
+            textmsg = "Player #1 wins!!!"
+        text = font.render(textmsg,1,colorPlayer1)
+        screen.blit(text, ((display_width/2)-190,25))
+    elif winner == 2:
+        textmsg = "It's a draw!!"
+        text = font.render(textmsg,1,white)
+        screen.blit(text, ((display_width/2)-190,25))
+
+    pygame.display.update()
+    pygame.time.wait(2000)
+
     while run_end:
 
-        font = pygame.font.SysFont('comicsansms', 50)  # comicsansms arial
-    
-        if winner == 1:
-            textmsg = "Player #2 wins!!!"
-            text = font.render(textmsg,1,colorPlayer2)
-            gameDisplay.blit(text, ((display_width/2)-190,25))
-        elif winner == -1:
-            if numPlayers == 1:
-                textmsg = "Computer wins!!!"
-            elif numPlayers == 2:
-                textmsg = "Player #1 wins!!!"
-            text = font.render(textmsg,1,colorPlayer1)
-            gameDisplay.blit(text, ((display_width/2)-190,25))
-        elif winner == 2:
-            textmsg = "It's a draw!!"
-            text = font.render(textmsg,1,white)
-            gameDisplay.blit(text, ((display_width/2)-190,25))
+        redrawWindow()
 
-        font = pygame.font.SysFont('comicsansms', 40)  # comicsansms arial
+        #font = pygame.font.SysFont('comicsansms', 40)  # comicsansms arial
         textmsg = "Play again?"
         text = font.render(textmsg,1,white)
-        gameDisplay.blit(text, ((display_width/2)+580,40))
+        screen.blit(text, ((display_width/2)-190,25))
+    #    screen.blit(text, ((display_width/2)+580,40))
 
-        yesButton.draw(gameDisplay,(0,0,0))  #surface, outline
-        noButton.draw(gameDisplay,(0,0,0))  #surface, outline
+        yesButton.draw(screen,(0,0,0))  #surface, outline
+        noButton.draw(screen,(0,0,0))  #surface, outline
         pygame.display.update()
 
         for event in pygame.event.get():
@@ -1663,7 +1723,7 @@ def game_loop():
             textmsg = "Computer's Turn"
             font = pygame.font.SysFont('comicsansms', 40)  # comicsansms arial
             text = font.render(textmsg,1,colorPlayer1)   # red  brightgreen  blue  lightblue
-            gameDisplay.blit(text, ((display_width/2)-155,40))
+            screen.blit(text, ((display_width/2)-155,40))
             pygame.display.update()
             pygame.time.wait(1200)
             computer_ai()
@@ -1693,10 +1753,10 @@ def game_loop():
                 text = font.render(textmsg,1,colorPlayer2)
             font = pygame.font.SysFont('comicsansms', 40)  # comicsansms arial
             #font = pygame.font.SysFont('arial', 40)  # comicsansms arial
-            gameDisplay.blit(text, ((display_width/2)-160,40))
+            screen.blit(text, ((display_width/2)-160,40))
 
             #text = font.render(textmsg,1,white)
-            #gameDisplay.blit(text, ((display_width)-400,40))
+            #screen.blit(text, ((display_width)-400,40))
             pygame.display.update()
  
             for event in pygame.event.get():
@@ -1761,5 +1821,6 @@ game_intro()
 game_loop()  # called from game_intro, do I need this?
 
 pygame.quit()
-quit()
+#quit()
+sys.exit()
 
