@@ -5,3 +5,5 @@ download connect_4.exe only to install the game for windows and play it!
 
 if you see a bug, take a screen shot and send it back to me for a chance at fame & fortune!
 
+update: added keeping score if you play more than one game
+
