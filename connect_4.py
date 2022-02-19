@@ -873,7 +873,7 @@ def winnerCheck():
 
 def endgame():
 
-    clock.tick(10)
+    clock.tick(3)
 #    clock.tick(30)
 
     global winsPlayer1
@@ -912,15 +912,23 @@ def endgame():
     pygame.display.update()
     pygame.time.wait(2000)
 
+    redrawWindow()
+
+    textmsg = "Play again?"
+    text = font.render(textmsg,1,white)
+    screen.blit(text, ((display_width/2)-190,25))
+    pygame.display.update()
+
     while run_end:
 
-        redrawWindow()
+        clock.tick(10)
 
-        #font = pygame.font.SysFont('comicsansms', 40)  # comicsansms arial
-        textmsg = "Play again?"
-        text = font.render(textmsg,1,white)
-        screen.blit(text, ((display_width/2)-190,25))
-    #    screen.blit(text, ((display_width/2)+580,40))
+#        redrawWindow()
+
+#        textmsg = "Play again?"
+#        text = font.render(textmsg,1,white)
+#        screen.blit(text, ((display_width/2)-190,25))
+#        #pygame.display.update()
 
         yesButton.draw(screen,(0,0,0))  #surface, outline
         noButton.draw(screen,(0,0,0))  #surface, outline
