@@ -10,3 +10,5 @@ update: added keeping score in case you want to play more than one game
 update: bug fixes: instructions, play again flicker (maybe fixed), game exit error
 
 update: play again flicker fix (?)
+
+update 220303: added delay to discdrop to avoid speed of light discs on fast machines!
