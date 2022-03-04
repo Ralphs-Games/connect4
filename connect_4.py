@@ -4,13 +4,12 @@
 # that so engrossed Captain Cook during his long
 # voyages that his crew gave it that name
 ###################################################
-
-# 2/18/22, 10:04 PM
+# 3/3/22, 10:20 PM
 
 '''
 to do:
 
-_screen <= screen
+check disk drop speed...
 
 alternate player that goes first
 _keep stats on # wins per player
@@ -25,6 +24,7 @@ AI for single player mode (in process)
     look for gaps? XX.X
 
 _2d array (but can't hold class instances)
+_screen <= screen
 _Screen update from 1d array
 Screen update from 2d array ??
 _2 player mode (easier)
@@ -70,6 +70,7 @@ black = (0,0,0)
 white = (255,255,255)
 brightgreen = (0,255,0)
 lightblue = (0,255,255)
+pink = (255,0,255)
 
 # bright colors:
 #blue   = (0,0,255)
@@ -117,6 +118,10 @@ honk3Sound = pygame.mixer.Sound('./sounds/honk3.wav')
 
 # debug:
 debugHilite = False
+
+
+#---------------------------
+# Functions:
 
 def drawRect(rect_x, rect_y, rect_w, rect_h, color):
     pygame.draw.rect(screen, color, [rect_x, rect_y, rect_w, rect_h])
@@ -466,7 +471,7 @@ def displayInstructions():
                     yesButton.color = (255,255,0)
 
 
-def game_intro():
+def game_setup():
 
     pygame.event.clear()
     run_setup = True
@@ -480,7 +485,7 @@ def game_intro():
     numPlayers = 2  # 1 for human vs. computer, 2 for human vs. human
     global turnPlayer
     turnPlayer = 1  # 1 or 2. Computer is player 1 if single player mode
-    print("game_intro: turnPlayer = ",turnPlayer)
+    print("game_setup: turnPlayer = ",turnPlayer)
     global winner
     winner = 0      # 1 or 2, winning player
     global playCount
@@ -494,7 +499,7 @@ def game_intro():
     # ai left/right coin toss:
     global leftRight
     leftRight = random.randint(0,1)
-    print("game_intro: leftRight =",leftRight)
+    print("game_setup: leftRight =",leftRight)
 
     #yesButton = ButtonCir((255,255,0), 1200,70,25,'Y')
     #noButton  = ButtonCir((255,255,0), 1270,70,25,'N')
@@ -506,7 +511,7 @@ def game_intro():
     redrawWindow()
     #pygame.display.update()
 
-    print("game_intro = while run_setup")
+    print("game_setup = while run_setup")
 
     while run_setup:
 
@@ -529,7 +534,7 @@ def game_intro():
             for event in pygame.event.get():
                 pos = pygame.mouse.get_pos()
                 if event.type == pygame.QUIT:
-                    run = False
+                    run_setup = False
                     pygame.quit()
                     sys.exit()
 
@@ -546,7 +551,7 @@ def game_intro():
                     print("displayInstructions = no")
                     instructionsDone = 1
                     redrawWindow()
-                    #run = False
+                    #run_setup = False
 
                 pos = pygame.mouse.get_pos()
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -561,7 +566,7 @@ def game_intro():
                         noButton.color = (255,255,0)
                         instructionsDone = 1
                         redrawWindow()
-                        #run = False
+                        #run_setup = False
 
                 if event.type == pygame.MOUSEMOTION:
                     if yesButton.isOver(pos):
@@ -703,44 +708,55 @@ def game_intro():
     redrawWindow()
     game_loop()   # experimental... but it seems to work!
 
-#def game_intro(): end
+#def game_setup(): end
 
 
 def dropDisc(column,color):
     print("dropDisc")
     global squaresArray
     run_dd = 1
+    delay = 25
+
     while run_dd:
+
+        clock.tick(5)   # experimental
+        #pygame.time.delay(5000)
+
         if squares2dArray[1,column] == 0:
 #            squaresArray[column].hilite = False
             squaresArray[column].disc = black
             squaresArray[column+7].disc = color
             squares2dArray[0,column] = 0
             redrawWindow()
+            pygame.time.delay(delay)
         elif squares2dArray[1,column] != 0:
             run_dd = 0
         if squares2dArray[2,column] == 0:
             squaresArray[column+7].disc = black
             squaresArray[column+14].disc = color
             redrawWindow()
+            pygame.time.delay(delay)
         elif squares2dArray[2,column] != 0:
             run_dd = 0
         if squares2dArray[3,column] == 0:
             squaresArray[column+14].disc = black
             squaresArray[column+21].disc = color
             redrawWindow()
+            pygame.time.delay(delay)
         elif squares2dArray[3,column] != 0:
             run_dd = 0
         if squares2dArray[4,column] == 0:
             squaresArray[column+21].disc = black
             squaresArray[column+28].disc = color
             redrawWindow()
+            pygame.time.delay(delay)
         elif squares2dArray[4,column] != 0:
             run_dd = 0
         if squares2dArray[5,column] == 0:
             squaresArray[column+28].disc = black
             squaresArray[column+35].disc = color
             redrawWindow()
+            #pygame.time.delay(delay)
             run_dd = 0
         elif squares2dArray[5,column] != 0:
             run_dd = 0
@@ -945,7 +961,7 @@ def endgame():
                 #initSquaresArray()
                 clearSquaresArray()
                 update2dArray()
-                game_intro()
+                game_setup()
             if keys[pygame.K_n]:  # supports upper & lower case
                 run_end = False
                 pygame.quit()
@@ -957,7 +973,7 @@ def endgame():
                     #initSquaresArray()
                     clearSquaresArray()
                     update2dArray()
-                    game_intro()
+                    game_setup()
                 if noButton.isOver(pos):
                     run_end = False
                     pygame.quit()
@@ -979,6 +995,8 @@ def computer_ai():
     run_ai = True
 
     # ai algorithm/strategy:
+    #
+    # how to update to allow taking turns at who goes first?
     # 
     # 1. if ai gets first move: play 5,3 (always) playColumn = 3
     #
@@ -1828,8 +1846,8 @@ def game_loop():
 #def game_loop(): end
 
 
-game_intro()
-game_loop()  # called from game_intro, do I need this?
+game_setup()
+game_loop()  # called from game_setup, do I need this?
 
 pygame.quit()
 #quit()
