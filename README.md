@@ -12,3 +12,6 @@ update: bug fixes: instructions, play again flicker (maybe fixed), game exit err
 update: play again flicker fix (?)
 
 update 220303: added delay to discdrop to avoid speed of light discs on fast machines!
+
+update 220320: added alternating first turn between players/computer for fairness
+
