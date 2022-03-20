@@ -4,24 +4,25 @@
 # that so engrossed Captain Cook during his long
 # voyages that his crew gave it that name
 ###################################################
-# 3/3/22, 10:20 PM
+# 3/20/22, 9:00 AM
 
 '''
 to do:
 
-check disk drop speed...
+AI for single player mode (in process)
+    _add 2iar strategy code
+    look for gaps? XX.X
 
-alternate player that goes first
+_alternate player that goes first (done)
 _keep stats on # wins per player
+
+_check disk drop speed... done, added delays
 
 _quit() -> sys.exit()
 
 _fix full board draw checking
 _fix ai drops into full column
 _? fix ai moves when no 3iar or 4iar ?
-AI for single player mode (in process)
-    _add 2iar strategy code
-    look for gaps? XX.X
 
 _2d array (but can't hold class instances)
 _screen <= screen
@@ -98,12 +99,13 @@ boardStartX = 420
 boardStartY = 130
 
 ### game play variables ###
-numPlayers = 2  # 1 for human vs. computer, 2 for human vs. human
-turnPlayer = 1  # 1 or 2. Computer is player 1 if single player mode
-winner     = 0  # 1 or 2, winning player
-playCount  = 0  # a play is one round, i.e. computer and human each taking a turn
-playColumn = 3  # ai always picks this on first move
-leftRight  = 0  # for random ai movement
+numPlayers   = 2  # 1 for human vs. computer, 2 for human vs. human
+whoGoesFirst = 1  # 1 (computer or player #1) or -1 (human or player #2). Alternates for now, but should loser always go first?
+turnPlayer   = 1  # 1 or 2. Computer is player 1 if single player mode
+winner       = 0  # 1 or 2, winning player
+playCount    = 0  # a play is one round, i.e. computer and human each taking a turn
+playColumn   = 3  # ai always picks this on first move
+leftRight    = 0  # for random ai movement
 
 # can be changed at game start:
 colorPlayer1 = red
@@ -473,22 +475,25 @@ def displayInstructions():
 
 def game_setup():
 
-    pygame.event.clear()
-    run_setup = True
-
     instructionsDone = 0
     numPlayersDone = 0
     discColorDone = 0
 
     # reset game variables:
     global numPlayers
-    numPlayers = 2  # 1 for human vs. computer, 2 for human vs. human
+#    global whoGoesFirst
     global turnPlayer
-    turnPlayer = 1  # 1 or 2. Computer is player 1 if single player mode
-    print("game_setup: turnPlayer = ",turnPlayer)
     global winner
-    winner = 0      # 1 or 2, winning player
     global playCount
+
+    numPlayers = 2  # 1 for human vs. computer, 2 for human vs. human
+    if whoGoesFirst == 1:
+        turnPlayer = 1  # 1 or 2. Computer is player 1 if single player mode
+    elif whoGoesFirst == -1:
+        turnPlayer = 2  # 1 or 2. Computer is player 1 if single player mode
+#    turnPlayer = 1  # 1 or 2. Computer is player 1 if single player mode
+    print("game_setup: turnPlayer = ",turnPlayer)  # debug
+    winner = 0      # 1 or 2, winning player
     playCount = 0   # a play is one round, i.e., computer and human each taking a turn
 
     global colorPlayer1
@@ -499,7 +504,7 @@ def game_setup():
     # ai left/right coin toss:
     global leftRight
     leftRight = random.randint(0,1)
-    print("game_setup: leftRight =",leftRight)
+    print("game_setup: leftRight =",leftRight)  # debug
 
     #yesButton = ButtonCir((255,255,0), 1200,70,25,'Y')
     #noButton  = ButtonCir((255,255,0), 1270,70,25,'N')
@@ -511,15 +516,15 @@ def game_setup():
     redrawWindow()
     #pygame.display.update()
 
-    print("game_setup = while run_setup")
+    print("game_setup = while run_setup")  # debug
+
+    pygame.event.clear()
+    run_setup = True
 
     while run_setup:
 
-        #redrawWindow()
-#        clock.tick(10)
         clock.tick(30)
 
-#       "Do you need instructions?"
         if instructionsDone == 0:
             textmsg = "Do you need instructions?"
             font = pygame.font.SysFont('comicsansms', 40)  # comicsansms arial
@@ -704,9 +709,9 @@ def game_setup():
                         yelButton.color = yellow
                     pygame.display.update()
 
-    print("intro exit: turnPlayer = ",turnPlayer)   # debug
-    redrawWindow()
-    game_loop()   # experimental... but it seems to work!
+    print("game_setup exit: turnPlayer = ",turnPlayer)   # debug
+    #redrawWindow()   # done in game_loop
+    game_loop()   # experimental... but it seems to work! why needed?
 
 #def game_setup(): end
 
@@ -889,21 +894,19 @@ def winnerCheck():
 
 def endgame():
 
-    clock.tick(3)
-#    clock.tick(30)
-
     global winsPlayer1
     global winsPlayer2
-    
-    run_end = True
-    yesButton = Button((255,255,0), 1180,50,40,40,'Y')
-    noButton  = Button((255,255,0), 1250,50,40,40,'N')
-#    yesButton = Button((255,255,0), 1750,50,40,40,'Y')
-#    noButton  = Button((255,255,0), 1820,50,40,40,'N')
-    redrawWindow()
+    global whoGoesFirst
+
+    print("endgame whoGoesFirst = ",whoGoesFirst)
+    whoGoesFirst = whoGoesFirst * -1   # alternate
+    print("endgame whoGoesFirst = ",whoGoesFirst)
+
     print("endgame winner = ",winner)
 
-#    while run_end:
+    redrawWindow()
+    yesButton = Button((255,255,0), 1180,50,40,40,'Y')
+    noButton  = Button((255,255,0), 1250,50,40,40,'N')
 
     font = pygame.font.SysFont('comicsansms', 50)  # comicsansms arial
 
@@ -935,16 +938,12 @@ def endgame():
     screen.blit(text, ((display_width/2)-190,25))
     pygame.display.update()
 
+    pygame.event.clear()
+    run_end = True
+
     while run_end:
 
         clock.tick(10)
-
-#        redrawWindow()
-
-#        textmsg = "Play again?"
-#        text = font.render(textmsg,1,white)
-#        screen.blit(text, ((display_width/2)-190,25))
-#        #pygame.display.update()
 
         yesButton.draw(screen,(0,0,0))  #surface, outline
         noButton.draw(screen,(0,0,0))  #surface, outline
@@ -1647,7 +1646,7 @@ def computer_ai():
 #def computer_ai(): end
 
 
-def fullColunnCheck():
+def fullColumnCheck():
 
     global playColumn
 
@@ -1674,7 +1673,6 @@ def fullColunnCheck():
                 elif 0 <= (playColumn - i):
                     if squares2dArray[0,playColumn - i] == 0:  # column is empty
                         playColumn = playColumn - i
-
 
 #        if leftRight == 0:  # left
 ##        if playColumn == 0:
@@ -1709,7 +1707,7 @@ def fullColunnCheck():
 #                    playColumn = playColumn - 1
 
 #        redrawWindow()
-    print("fullColunnCheck exit: playColumn = ",playColumn)   # debug
+    print("fullColumnCheck exit: playColumn = ",playColumn)   # debug
 
 
 def game_loop():
@@ -1717,8 +1715,8 @@ def game_loop():
     print("")
     print("game_loop = while run_game")
     print("")
-    pygame.event.clear()
 
+    pygame.event.clear()
     redrawWindow()
 
     global numPlayers
@@ -1737,6 +1735,8 @@ def game_loop():
     print("turnPlayer = ",turnPlayer)
     print("winner = ",winner)
 
+    font = pygame.font.SysFont('comicsansms', 40)
+
     run_game = True
 
     while run_game:
@@ -1750,14 +1750,14 @@ def game_loop():
     # is it computer's turn?
         if numPlayers == 1 and turnPlayer == 1:
             textmsg = "Computer's Turn"
-            font = pygame.font.SysFont('comicsansms', 40)  # comicsansms arial
-            text = font.render(textmsg,1,colorPlayer1)   # red  brightgreen  blue  lightblue
+            font = pygame.font.SysFont('comicsansms', 40)
+            text = font.render(textmsg,1,colorPlayer1)
             screen.blit(text, ((display_width/2)-155,40))
             pygame.display.update()
             pygame.time.wait(1200)
             computer_ai()
-            fullColunnCheck()
-        # change to support color choice:
+            fullColumnCheck()
+            # change to support color choice:
             #colorPlayer1
             squaresArray[playColumn].disc = colorPlayer1
             print("squaresArray",playColumn,".disc =",colorPlayer1)   # debug
@@ -1774,18 +1774,14 @@ def game_loop():
 
     # is it human's turn?
         if turnPlayer == 2 or numPlayers == 2:
+            font = pygame.font.SysFont('comicsansms', 40)  # comicsansms arial
             if turnPlayer == 1:
                 textmsg = "Player #1's Turn"
                 text = font.render(textmsg,1,colorPlayer1)
             elif turnPlayer == 2:
                 textmsg = "Player #2's Turn"
                 text = font.render(textmsg,1,colorPlayer2)
-            font = pygame.font.SysFont('comicsansms', 40)  # comicsansms arial
-            #font = pygame.font.SysFont('arial', 40)  # comicsansms arial
             screen.blit(text, ((display_width/2)-160,40))
-
-            #text = font.render(textmsg,1,white)
-            #screen.blit(text, ((display_width)-400,40))
             pygame.display.update()
  
             for event in pygame.event.get():
