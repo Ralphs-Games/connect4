@@ -127,13 +127,14 @@ dropSound = pygame.mixer.Sound('./sounds/sfx_sounds_impact6.wav')
 honk3Sound = pygame.mixer.Sound('./sounds/honk3.wav')
 click = pygame.mixer.Sound('./sounds/click.ogg')
 alarmBellSound = pygame.mixer.Sound('./sounds/alarm-bell.wav')  # computer wins
-#shipsBellSound = pygame.mixer.Sound('./sounds/ships_bell.wav')
+shipsBellSound = pygame.mixer.Sound('./sounds/ships_bell.wav')
 twoBellsSound = pygame.mixer.Sound('./sounds/ship-bell-two-chimes.wav')  # human wins
 
 # music #
 pygame.mixer.init()
 pygame.mixer.music.set_volume(0.05)  # 0.03-0.05
-music = pygame.mixer.music.load("sounds/sea_waves_266.wav")
+music = pygame.mixer.music.load("sounds/sea_waves_13sec.wav")
+#music = pygame.mixer.music.load("sounds/sea_waves_266.wav")
 pygame.mixer.music.play(-1) # -1 will ensure the song keeps looping
 
 # debug:
@@ -697,6 +698,7 @@ def game_setup():
                 pos = pygame.mouse.get_pos()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     click.play()
+                    pygame.time.delay(500)
                     if redButton.isOver(pos):
                         colorPlayer1 = yellow
                         colorPlayer2 = red
@@ -1737,6 +1739,7 @@ def endgame():
                     #game_setup()
                     game_loop()
                 if noButton.isOver(pos):
+                    pygame.time.delay(500)
                     run_end = False
                     #replay = 0
                     pygame.quit()
@@ -1780,6 +1783,8 @@ def game_loop():
     print("winner = ",winner)
 
     font = pygame.font.SysFont('comicsansms', 40)
+
+    shipsBellSound.play()
 
     run_game = True
 
