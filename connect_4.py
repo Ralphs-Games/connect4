@@ -4,11 +4,19 @@
 # that so engrossed Captain Cook during his long
 # voyages that his crew gave it that name
 #===================================================
-# 3/21/23, 7:30 PM
+# 3/26/23, 10:40 AM
+
+# The Rules of Connect 4:
+# Players must connect 4 of the same colored discs in a row to win.
+# Only one piece is played at a time.
+# The game ends when there is a 4-in-a-row or a stalemate.
+# Players take turns going first.
 
 '''
+
 to do:
 
+add selection for beginner or advanced mode
 
 AI for single player mode (in process)
     _add 2iar strategy code
@@ -22,6 +30,7 @@ _add click sound for mouse clicks
 _don't ask again for instructions, #players, colors, etc., on replay
 
 _alternate player that goes first (done)
+_fix taking turns at the start of a new game (done, damn globals!)
 _keep stats on # wins per player
 
 _check disk drop speed... done, added delays
@@ -94,6 +103,8 @@ green  = (0,200,0)
 boardRows = 6
 boardCols = 7
 
+avoidColumns = [0,0,0,0,0,0,0]
+
 squareSize = 150
 squareBorder = 5
 # use if no border desired:
@@ -106,7 +117,7 @@ boardStartY = 130
 
 ### game play variables ###
 numPlayers   = 2  # 1 for human vs. computer, 2 for human vs. human
-whoGoesFirst = 1  # 1 (computer or player #1) or -1 (human or player #2). Alternates for now, but should loser always go first?
+whoGoesFirst = 1  # 1 (computer or player #1) or -1 (human or player #2). Alternates for now (per the rules), but should loser always go first? optional?
 turnPlayer   = 1  # 1 or 2. Computer is player 1 if single player mode
 winner       = 0  # 1 or 2, winning player
 playCount    = 0  # a play is one round, i.e. computer and human each taking a turn
@@ -117,12 +128,11 @@ leftRight    = 0  # for random ai movement
 colorPlayer1 = red
 colorPlayer2 = yellow
 
-# stats? num victories by each player/computer?
+# stats: num victories by each player/computer
 winsPlayer1 = 0
 winsPlayer2 = 0
 
-#To play a sound we type:
-#bulletSound.play()
+# To play a sound: bulletSound.play()
 dropSound = pygame.mixer.Sound('./sounds/sfx_sounds_impact6.wav')
 honk3Sound = pygame.mixer.Sound('./sounds/honk3.wav')
 click = pygame.mixer.Sound('./sounds/click.ogg')
@@ -134,7 +144,6 @@ twoBellsSound = pygame.mixer.Sound('./sounds/ship-bell-two-chimes.wav')  # human
 pygame.mixer.init()
 pygame.mixer.music.set_volume(0.05)  # 0.03-0.05
 music = pygame.mixer.music.load("sounds/sea_waves_13sec.wav")
-#music = pygame.mixer.music.load("sounds/sea_waves_266.wav")
 pygame.mixer.music.play(-1) # -1 will ensure the song keeps looping
 
 # debug:
@@ -149,54 +158,6 @@ def drawRect(rect_x, rect_y, rect_w, rect_h, color):
 
 def drawCirle(x, y, radius, color, width=0):   # x,y is center. If width > 1, is line thickness, else filled. 
     pygame.draw.circle(screen, color, (x, y), radius, width)   # circle(surface, color, center, radius) 
-
-
-## no longer using this, see boardSquare class
-#def drawSquare(x, y, size, color, disc, hilite):
-#    drawRect(x, y, size, size, color)
-#    drawCirle(x + squareSize/2, y + squareSize/2, circleRadius+2, black)   # draw hole in square
-#    drawCirle(x + squareSize/2, y + squareSize/2, circleRadius, disc)        # fill if disc present
-#    drawCirle(x + squareSize/2, y + squareSize/2, circleRadius-3, black, 2)
-#    drawCirle(x + squareSize/2, y + squareSize/2, circleRadius-8, black, 2)
-#    if hilite == True:
-#        drawCirle(x + squareSize/2, y + squareSize/2, circleRadius+10, brightgreen, 8)   # drawCircleHiLite
-
-## might need this later... unused currently
-## draws at x,y; is this useful?? use isover instead to update class? then drawSquare?
-#def drawDisc(x, y, color):
-#    drawCirle(x, y, circleRadius, color)
-#    drawCirle(x, y, circleRadius-3, black, 2)
-#    drawCirle(x, y, circleRadius-8, black, 2)
-
-## might need this later...
-#def drawCircleHiLite(x, y):
-#    drawCirle(x + squareSize/2, y + squareSize/2, circleRadius+10, brightgreen, 8)
-
-# debug: misc debug stuff I'm no longer using below...
-
-# debug:
-# print 2d array values
-#for i in range(boardRows):
-#    for j in range(boardCols):
-#        print(squares2dArray[i,j])
-##        k = i // boardCols
-##        l = i %  boardCols
-
-#           debug:
-#            drawDisc(pos[0], pos[1], green)
-#           debug:
-#            print('mouse_x =',pos[0],' mouse_y =',pos[1])
-
-#keys = pygame.key.get_pressed()
-#if keys[pygame.K_y]:
-
-#squaresArray[38].disc = 'red'
-
-# debug:
-#for i in range (len(squaresArray)):
-#    squaresArray[i].hilite = False
-#    if squaresArray[i].isOver(pos):
-#        squaresArray[i].hilite = True
 
 
 #------------------------------------------------------
@@ -326,22 +287,22 @@ def redrawWindow():
     textmsg = "Player #1 Score:"
     text = font.render(textmsg,1,colorPlayer1)
     screen.blit(text, (1560,40))
-#    screen.blit(text, (30,150))
-#    print("winsPlayer1 =",winsPlayer1)
+    #screen.blit(text, (30,150))
+    #print("winsPlayer1 =",winsPlayer1)
     textmsg = str(winsPlayer1)
     text = font.render(textmsg,1,colorPlayer1)
     screen.blit(text, (1820,40))
-#    screen.blit(text, (50,150))
+    #screen.blit(text, (50,150))
 
     textmsg = "Player #2 Score:"
     text = font.render(textmsg,1,colorPlayer2)
     screen.blit(text, (1560,80))
-#    screen.blit(text, (30,200))
-#    print("winsPlayer2 =",winsPlayer2)
+    #screen.blit(text, (30,200))
+    #print("winsPlayer2 =",winsPlayer2)
     textmsg = str(winsPlayer2)
     text = font.render(textmsg,1,colorPlayer2)
     screen.blit(text, (1820,80))
-#    screen.blit(text, (50,200))
+    #screen.blit(text, (50,200))
 
     #update2dArray()
     pygame.display.update()
@@ -424,7 +385,7 @@ instructions = ["*** Instructions ***"
 ,"or diagonal line of four of one's own discs."
 ,""
 ,"You may also play against the computer as a single player."
-,"The computer always moves first."
+,"The computer always starts the first game. Players take turns going first afterwards."
 ,""
 ,"Position the mouse at the top square of the column you want to choose"
 ,"and then click to drop a piece down it."]
@@ -482,51 +443,59 @@ def displayInstructions():
 #------------------------------------------------------
 def game_setup():
 
-    instructionsDone = 0
-    numPlayersDone = 0
-    discColorDone = 0
+    # add selection for beginner or advanced mode
+
+    print("")
+    print("** Welcome to Connect-4 (aka The Captain's Mistress) **")
+    print("")
+    print("game_setup")
 
     # reset game variables:
     global numPlayers
-    # global whoGoesFirst
+    global whoGoesFirst
     global turnPlayer
     global winner
     global playCount
-    global replay
-
-    # turnPlayer = 1  # 1 or 2. Computer is player 1 if single player mode
-
-    numPlayers = 2  # 1 for human vs. computer, 2 for human vs. human
-    if whoGoesFirst == 1:
-        turnPlayer = 1  # 1 or 2. Computer is player 1 if single player mode
-    elif whoGoesFirst == -1:
-        turnPlayer = 2  # 1 or 2. Computer is player 1 if single player mode
-
-    print("game_setup: turnPlayer = ",turnPlayer)  # debug
-    winner = 0      # 1 or 2, winning player
-    playCount = 0   # a play is one round, i.e., computer and human each taking a turn
 
     global colorPlayer1
     global colorPlayer2
     colorPlayer1 = red
     colorPlayer2 = yellow
 
+    instructionsDone = 0
+    winner = 0      # 1 or 2, winning player
+    playCount = 0   # a play is one round, i.e., computer and human each taking a turn
+
+    #  since replay added, do I need to do this?
+    numPlayersDone = 0
+    discColorDone = 0
+
+    # RH is this correct here? since replay added, do I need to do this?
+    #numPlayers = 2  # 1 for human vs. computer, 2 for human vs. human
+    #if whoGoesFirst == 1:
+    #    turnPlayer = 1  # Computer is player 1 if single player mode
+    #elif whoGoesFirst == -1:
+    #    turnPlayer = 2  # human
+
+    turnPlayer   = 1    # Computer is player 1 if single player mode
+    whoGoesFirst = 1    # The computer always starts the first game
+
+    print("game_setup: turnPlayer =",turnPlayer)  # debug
+
     # ai left/right coin toss:
     global leftRight
     leftRight = random.randint(0,1)
     print("game_setup: leftRight =",leftRight)  # debug
-
-    #yesButton = ButtonCir((255,255,0), 1200,70,25,'Y')
-    #noButton  = ButtonCir((255,255,0), 1270,70,25,'N')
-    yesButton = Button((255,255,0), 1180,50,40,40,'Y')
-    noButton  = Button((255,255,0), 1250,50,40,40,'N')
 
     initSquaresArray()
     update2dArray()
     redrawWindow()
     #pygame.display.update()
 
-    print("game_setup = while run_setup")  # debug
+    #yesButton = ButtonCir((255,255,0), 1200,70,25,'Y')
+    #noButton  = ButtonCir((255,255,0), 1270,70,25,'N')
+    yesButton = Button((255,255,0), 1180,50,40,40,'Y')
+    noButton  = Button((255,255,0), 1250,50,40,40,'N')
 
     pygame.event.clear()
     run_setup = True
@@ -554,35 +523,35 @@ def game_setup():
                     sys.exit()
 
                 #if event.type == pygame.KEYDOWN:
-                    #if event.key == pygame.K_LEFT:
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_y]:  # supports upper & lower case
                     print("displayInstructions = yes")
                     displayInstructions()
                     instructionsDone = 1
                     redrawWindow()
-
                 if keys[pygame.K_n]:  # supports upper & lower case
                     print("displayInstructions = no")
                     instructionsDone = 1
                     redrawWindow()
-                    #run_setup = False
 
-                pos = pygame.mouse.get_pos()
+                pos = pygame.mouse.get_pos()    # needed?
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     click.play()
                     if yesButton.isOver(pos):
                         print("displayInstructions = yes")
                         displayInstructions()
-                        yesButton.color = (255,255,0)
-                        instructionsDone = 1
-                        redrawWindow()
-                    if noButton.isOver(pos):
+                        #yesButton.color = (255,255,0)
+                        #instructionsDone = 1
+                        #redrawWindow()
+                    elif noButton.isOver(pos):    # if
                         print("displayInstructions = no")
-                        noButton.color = (255,255,0)
-                        instructionsDone = 1
-                        redrawWindow()
-                        #run_setup = False
+                        #noButton.color = (255,255,0)
+                        #instructionsDone = 1
+                        #redrawWindow()
+                    yesButton.color = (255,255,0)
+                    noButton.color = (255,255,0)
+                    instructionsDone = 1
+                    redrawWindow()
 
                 if event.type == pygame.MOUSEMOTION:
                     if yesButton.isOver(pos):
@@ -601,10 +570,6 @@ def game_setup():
             #font = pygame.font.SysFont('arial', 30)
             text = font.render(textmsg,1,white)
             screen.blit(text, ((display_width/2)-320,40))
-
-            #yesButton = ButtonCir((255,255,0), 1200,70,25,'Y')
-            #noButton  = ButtonCir((255,255,0), 1270,70,25,'N')
-
             yesButton.draw(screen,(0,0,0))  #surface, outline
             noButton.draw(screen,(0,0,0))  #surface, outline
             pygame.display.update()
@@ -615,20 +580,18 @@ def game_setup():
                     pygame.quit()
                     sys.exit()
 
+                #if event.type == pygame.KEYDOWN:
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_y]:  # supports upper & lower case
                     numPlayers = 2
                     numPlayersDone = 1
-                    print("numPlayers = ",numPlayers)
+                    print("numPlayers =",numPlayers)
                     redrawWindow()
-                    #run_setup = False
-
                 if keys[pygame.K_n]:  # supports upper & lower case
                     numPlayers = 1
                     numPlayersDone = 1
-                    print("numPlayers = ",numPlayers)
+                    print("numPlayers =",numPlayers)
                     redrawWindow()
-                    #run_setup = False
 
                 pos = pygame.mouse.get_pos()
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -636,13 +599,13 @@ def game_setup():
                     if yesButton.isOver(pos):
                         numPlayers = 2
                         numPlayersDone = 1
-                        print("numPlayers = ",numPlayers)
+                        print("numPlayers =",numPlayers)
                         redrawWindow()
                     #run_setup = False
                     if noButton.isOver(pos):
                         numPlayers = 1
                         numPlayersDone = 1
-                        print("numPlayers = ",numPlayers)
+                        print("numPlayers =",numPlayers)
                         redrawWindow()
                     #run_setup = False
 
@@ -723,7 +686,7 @@ def game_setup():
                         yelButton.color = yellow
                     pygame.display.update()
 
-    print("game_setup exit: turnPlayer = ",turnPlayer)   # debug
+    print("game_setup exit: turnPlayer =",turnPlayer)   # debug
     #redrawWindow()   # done in game_loop
     game_loop()   # experimental... but it seems to work! why needed?
 
@@ -734,7 +697,8 @@ def game_setup():
 def computer_ai():
 
     print("computer_ai")
-    run_ai = True
+
+    # code is ordered in increasing priority, top to bottom, last one rules!
 
     # ai algorithm/strategy:
     #
@@ -784,15 +748,17 @@ def computer_ai():
     global playCount
     global leftRight
     global playColumn
-
-    print("playCount = ",playCount)   # debug
-    print("leftRight = ",leftRight)   # debug
+    global avoidColumns
 
     playColumn = 3
-
     numInRow = 0
+    avoidColumns = [0,0,0,0,0,0,0]    # init array
 
-    # a = random.randint(0,1)
+    print("playCount =",playCount)   # debug
+    print("leftRight =",leftRight)   # debug
+    print("playColumn =",playColumn)  
+
+    run_ai = True
 
     while run_ai:
 
@@ -805,41 +771,43 @@ def computer_ai():
                     playColumn = 2  # left
                 elif leftRight == 1:
                     playColumn = 4  # right
-                run_ai = False
+                run_ai = False    # needed?
             else:
                 playColumn = 3      # (1b) ai takes the center stack
-                run_ai = False
+                run_ai = False    # needed?
+            run_ai = False
         elif playCount == 2:
             if squares2dArray[4,3] == 1 and squares2dArray[3,3] == 1:   # human in stack 2 deep
                 if squares2dArray[5,2] == 0:   # (2a)
                     playColumn = 2
-                    run_ai = False
+                    run_ai = False    # needed?
                 elif squares2dArray[5,4] == 0:  # (2a)
                     playColumn = 4
-                    run_ai = False
+                    run_ai = False    # needed?
                 run_ai = False
             elif squares2dArray[4,3] == 1 and squares2dArray[3,3] == 0:   # human in stack 1 deep
                 if squares2dArray[5,2] == 0:   # (2b)
                     playColumn = 2
-                    run_ai = False
+                    run_ai = False    # needed?
                 elif squares2dArray[5,4] == 0:  # (2b)
                     playColumn = 4
-                    run_ai = False
+                    run_ai = False    # needed?
                 elif squares2dArray[5,2] == 1:  # (2b)
                     playColumn = 5
-                    run_ai = False
+                    run_ai = False    # needed?
                 elif squares2dArray[5,4] == 1:  # (2b)
                     playColumn = 1
-                    run_ai = False
+                    run_ai = False    # needed?
+                run_ai = False
             elif squares2dArray[4,3] == -1 and squares2dArray[3,3] == 1:   # human on top in stack (3c)
                 if squares2dArray[5,2] == 0:   # (2c)
                     playColumn = 2
-                    run_ai = False
+                    run_ai = False    # needed?
                 elif squares2dArray[5,4] == 0:  # (2c)
                     playColumn = 4
-                    run_ai = False
+                    run_ai = False    # needed?
                 run_ai = False
-            elif squares2dArray[4,3] == -1 and squares2dArray[3,3] == 0:   # human in stack 1 deep
+            elif squares2dArray[4,3] == -1 and squares2dArray[3,3] == 0:   # ai in stack 1 deep
                 playColumn = 3       # (2d) ai takes the center stack
                 run_ai = False
         elif playCount == 3:
@@ -879,7 +847,17 @@ def computer_ai():
                 elif squares2dArray[5,5] == 1:  # (3c)
                     playColumn = 4
                     run_ai = False
+            elif squares2dArray[5,1] == 0:   # (2b)
+                playColumn = 1
+                run_ai = False    # needed?
+            elif squares2dArray[5,5] == 0:  # (2b)
+                playColumn = 5
+                run_ai = False    # needed?
+            run_ai = False
 
+        if playCount <= 3:
+            print("# early moves, playCount =",playCount)  
+            print("playColumn =",playColumn)  
 
         # 1. ck for ai 3iar to win by 4th
         # 2. ck user 3iar, 2iar, block. If 2iar, favor blocks that create 2/3iar for ai
@@ -888,8 +866,302 @@ def computer_ai():
         # code is ordered in increasing priority, top to bottom, last one rules!
     
         # if debugHilite == 1:
-    
-        ##  2iar:
+
+        #boardRows = 6
+        #boardCols = 7
+
+        print("")
+        print("## gap check 3/4:")
+        # scan board, add up how many 3/4 gap plays there are for both ai & human, use in algo
+        # check rows
+        numInRow = 0
+        for i in range(boardRows):
+            for j in range(4):    # stops after col 3
+                numInRow = squares2dArray[i,j] + squares2dArray[i,j+1] + squares2dArray[i,j+2] + squares2dArray[i,j+3]
+                # ai
+                if numInRow == -3:   # ai
+                    print("numInRow =",numInRow)
+                    for k in range(4):
+                        if squares2dArray[i,j + k] == 0:
+                            if i == 5:
+                                playColumn = j + k
+                                print("ai 3/4 gap: playColumn =",playColumn)
+                                run_ai = False
+                            elif squares2dArray[(i + 1),(j + k)] != 0:    # support to make 4iar
+                                playColumn = j + k
+                                print("ai 3/4 gap: playColumn =",playColumn)
+                                run_ai = False
+                # human
+                elif numInRow == 3:    # human
+                    print("numInRow =",numInRow)
+                    for k in range(4):
+                        if squares2dArray[i,j + k] == 0:
+                            if i == 5:
+                                playColumn = j + k
+                                print("ai 3/4 gap: playColumn =",playColumn)
+                                run_ai = False
+                            elif squares2dArray[(i + 1),(j + k)] != 0:    # support to fill gap (block it)
+                                playColumn = j + k
+                                print("ai 3/4 gap: playColumn =",playColumn)
+                                run_ai = False
+                            elif squares2dArray[(i + 1),(j + k)] == 0:    # avoid col
+                                avoidColumns[j + k] = 1
+
+        # check diagonals right, starting from top left corner
+        numInRow = 0
+        for i in range(3):
+            for j in range(4):
+                numInRow = squares2dArray[i,j] + squares2dArray[i+1,j+1] + squares2dArray[i+2,j+2] + squares2dArray[i+3,j+3]    # add num in diagonal
+                # ai
+                if numInRow == -3:  # ai
+                    print("numInRow =",numInRow) 
+                    for k in range(4):
+                        if squares2dArray[i + k,j + k] == 0:
+                            if squares2dArray[(i + k + 1),(j + k)] != 0:    # support to make 4iar
+                                playColumn = j + k
+                                print("ai 3/4 gap: playColumn =",playColumn)
+                                run_ai = False
+                # human
+                elif numInRow == 3:    # human
+                    print("numInRow =",numInRow) 
+                    for k in range(4):
+                        if squares2dArray[i + k,j + k] == 0:
+                            if squares2dArray[(i + k + 1),(j + k)] != 0:    # support to fill gap (block it)
+                                playColumn = j + k
+                                print("ai 3/4 gap: playColumn =",playColumn)
+                                run_ai = False
+                            elif squares2dArray[(i + k + 1),(j + k)] == 0:    # avoid col
+                                avoidColumns[j + k] = 1
+
+        # check diagonals left, starting from top right corner
+        numInRow = 0
+        for i in range(3):
+            for j in range(3,boardCols):
+                numInRow = squares2dArray[i,j] + squares2dArray[i+1,j-1] + squares2dArray[i+2,j-2] + squares2dArray[i+3,j-3]    # add num in diagonal
+                # ai
+                if numInRow == -3:  # ai
+                    print("numInRow =",numInRow) 
+                    for k in range(4):
+                        if squares2dArray[i + k,j - k] == 0:
+                            if squares2dArray[(i + k + 1),(j - k)] != 0:    # support to make 4iar
+                                playColumn = j - k
+                                print("ai 3/4 gap: playColumn =",playColumn)
+                                run_ai = False
+                # human
+                elif numInRow == 3:    # human
+                    print("numInRow =",numInRow) 
+                    for k in range(4):
+                        if squares2dArray[i + k,j - k] == 0:
+                            if squares2dArray[(i + k + 1),(j - k)] != 0:    # support to fill gap (block it)
+                                playColumn = j - k
+                                print("ai 3/4 gap: playColumn =",playColumn)
+                                run_ai = False
+                            elif squares2dArray[(i + k + 1),(j - k)] == 0:    # avoid col
+                                avoidColumns[j + k] = 1
+
+        print("## check 3iar:")
+        # scan board, add up how many 3iar for both ai & human, use in algo
+        # check rows
+        numInRow = 0
+        for i in range(boardRows):
+            for j in range(5):
+                numInRow = squares2dArray[i,j] + squares2dArray[i,j+1] + squares2dArray[i,j+2]
+                # ai
+                if numInRow == -3:   # ai
+                    print("numInRow =",numInRow)
+                    if 0 <= (j - 1):
+                        print("ai 3iar rows: j-1")
+                        if squares2dArray[i,(j - 1)] == 0:  # open to make 4iar
+                            if i == 5:
+                                playColumn = j - 1
+                                print("ai 3iar rows: playColumn =",playColumn)
+                                run_ai = False
+                            elif i < boardRows - 1:
+                                if squares2dArray[(i + 1),(j - 1)] != 0:  # support to make 3iar
+                                    playColumn = j - 1
+                                    print("ai 3iar rows: playColumn =",playColumn)
+                                    run_ai = False
+                    if (j + 3) < boardCols:
+                        print("ai 3iar rows: j+3")
+                        if squares2dArray[i,(j + 3)] == 0:  # open to make 4iar
+                            if i == 5:
+                                playColumn = j + 3
+                                print("ai 3iar rows: playColumn =",playColumn) 
+                                run_ai = False
+                            elif i < boardRows - 1:
+                                if squares2dArray[(i + 1),(j + 3)] != 0:  # support to make 4iar
+                                    playColumn = j + 3
+                                    print("ai 3iar rows: playColumn =",playColumn) 
+                                    run_ai = False
+                # human
+                elif numInRow == 3:  # human
+                    print("numInRow =",numInRow)
+                    if 0 <= (j - 1):
+                        print("ai 3iar rows: j-1") 
+                        if squares2dArray[i,(j - 1)] == 0:  # open to block 4iar
+                            if i == 5:
+                                playColumn = j - 1
+                                run_ai = False
+                            elif i < boardRows - 1:
+                                if squares2dArray[(i + 1),(j - 1)] != 0:  # support to block 4iar
+                                    playColumn = j - 1
+                                    run_ai = False
+                                elif squares2dArray[(i + 1),(j - 1)] == 0:  # avoid col
+                                    avoidColumns[j - 1] = 1
+                    if (j + 3) < boardCols:
+                        print("ai 3iar rows: j+3")
+                        if squares2dArray[i,(j + 3)] == 0:  # open to block 4iar
+                            if i == 5:
+                                playColumn = j + 3
+                                print("ai 3iar colsrows: playColumn =",playColumn) 
+                                run_ai = False
+                            elif i < boardRows - 1:
+                                if squares2dArray[(i + 1),(j + 3)] != 0:  # support to block 4iar
+                                    playColumn = j + 3
+                                    print("ai 3iar colsrows: playColumn =",playColumn) 
+                                    run_ai = False
+                                elif squares2dArray[(i + 1),(j + 3)] == 0:    # avoid col
+                                    avoidColumns[j + 3] = 1
+        # check columns
+        numInRow = 0
+        for i in range(4):
+            for j in range(boardCols):
+                numInRow = squares2dArray[i,j] + squares2dArray[i+1,j] + squares2dArray[i+2,j]
+                if numInRow == -3:  # ai
+                    print("numInRow =",numInRow) 
+                    if 0 <= (i - 1):
+                        print("ai 3iar cols: i-1")
+                        if squares2dArray[i - 1,j] == 0:  # open to make 4iar
+                            playColumn = j
+                            print("ai 3iar cols: playColumn =",playColumn)
+                            run_ai = False
+                elif numInRow == 3:    # human
+                    print("numInRow =",numInRow) 
+                    if 0 <= (i - 1):
+                        print("ai 3iar cols: i-1")
+                        if squares2dArray[i - 1,j] == 0:  # open to make 4iar
+                            playColumn = j
+                            print("ai 3iar cols: playColumn =",playColumn)
+                            run_ai = False
+        # check diagonals right
+        numInRow = 0
+        for i in range(4):
+            for j in range(5):
+                numInRow = squares2dArray[i,j] + squares2dArray[i+1,j+1] + squares2dArray[i+2,j+2]    # add num in diagonal
+                if numInRow == -3:  # ai
+                    print("numInRow =",numInRow) 
+                    if 0 <= (i - 1):
+                        if 0 <= (j - 1):
+                            print("ai 3iar diagonals right: j-1") 
+                            if squares2dArray[(i - 1),(j - 1)] == 0:  # open to make 4iar
+                                if squares2dArray[i,(j - 1)] != 0:  # support to make 4iar
+                                    playColumn = j - 1
+                                    print("ai 3iar diagonals right: playColumn =",playColumn) 
+                                    run_ai = False
+                    if (i + 3) < boardRows:
+                        if (j + 3) < boardCols:
+                            print("ai 3iar diagonals right: j+3") 
+                            if squares2dArray[(i + 3),(j + 3)] == 0:  # open to make 4iar
+                                if (i + 3) == 5:
+                                    playColumn = j + 3
+                                    print("ai 3iar diagonals right: playColumn =",playColumn) 
+                                    run_ai = False
+                                elif (i + 3) < 5:
+                                    if squares2dArray[(i + 4),(j + 3)] != 0:  # support to make 4iar
+                                        playColumn = j + 3
+                                        print("ai 3iar diagonals right: playColumn =",playColumn) 
+                                        run_ai = False
+                elif numInRow == 3:    # human
+                    print("numInRow =",numInRow) 
+                    if 0 <= (i - 1):
+                        if 0 <= (j - 1):
+                            print("ai 3iar diagonals right: j-1") 
+                            if squares2dArray[(i - 1),(j - 1)] == 0:  # open to make 4iar
+                                if squares2dArray[i,(j - 1)] != 0:  # support to make 4iar
+                                    playColumn = j - 1
+                                    print("ai 3iar diagonals right: playColumn =",playColumn) 
+                                    run_ai = False
+                                elif squares2dArray[i,(j - 1)] == 0:    # avoid col
+                                    avoidColumns[j - 1] = 1
+                    if (i + 3) < boardRows:
+                        if (j + 3) < boardCols:
+                            print("ai 3iar diagonals right: j+3") 
+                            if squares2dArray[(i + 3),(j + 3)] == 0:  # open to make 4iar
+                                if (i + 3) == 5:
+                                    playColumn = j + 3
+                                    print("ai 3iar diagonals right: playColumn =",playColumn) 
+                                    run_ai = False
+                                elif (i + 3) < 5:
+                                    if squares2dArray[(i + 4),(j + 3)] != 0:  # support to make 4iar
+                                        playColumn = j + 3
+                                        print("ai 3iar diagonals right: playColumn =",playColumn) 
+                                        run_ai = False
+                                    elif squares2dArray[(i + 4),(j + 3)] == 0:    # avoid col
+                                        avoidColumns[j + 3] = 1
+        # check diagonals left
+        numInRow = 0
+        for i in range(4):
+            for j in range(2,boardCols):
+                numInRow = squares2dArray[i,j] + squares2dArray[i+1,j-1] + squares2dArray[i+2,j-2]
+                # ai
+                if numInRow == -3:  # ai
+                    print("numInRow =",numInRow) 
+                    if 0 <= (i - 1):
+                        if (j + 1) < boardCols:
+                            print("ai 3iar diagonals left: i-1") 
+                            if squares2dArray[(i - 1),(j + 1)] == 0:  # open to make 4iar
+                                if squares2dArray[i,(j + 1)] != 0:  # support to make 4iar
+                                    playColumn = j + 1
+                                    print("ai 3iar diagonals left: playColumn =",playColumn) 
+                                    run_ai = False
+                    if (i + 3) < boardRows:
+                        if 0 <= (j - 3):
+                            print("ai 3iar diagonals left: j-3") 
+                            if squares2dArray[(i + 3),(j - 3)] == 0:  # open to make 4iar
+                                if (i + 3) == 5:
+                                    playColumn = j - 3
+                                    print("ai 3iar diagonals left: playColumn =",playColumn) 
+                                    run_ai = False
+                                elif (i + 3) < 5:
+                                    if squares2dArray[(i + 4),(j - 3)] != 0:  # support to make 4iar
+                                        playColumn = j - 3
+                                        print("ai 3iar diagonals left: playColumn =",playColumn) 
+                                        run_ai = False
+                # human
+                elif numInRow == 3:    # human
+                    print("numInRow =",numInRow) 
+                    if 0 <= (i - 1):
+                        if (j + 1) < boardCols:
+                            print("ai 3iar diagonals left: i-1") 
+                            if squares2dArray[(i - 1),(j + 1)] == 0:  # open to make 4iar
+                                if squares2dArray[i,(j + 1)] != 0:  # support to make 4iar
+                                    playColumn = j + 1
+                                    print("ai 3iar diagonals left: playColumn =",playColumn) 
+                                    run_ai = False
+                                elif squares2dArray[i,(j + 1)] == 0:    # avoid col
+                                    avoidColumns[j + 1] = 1
+                    if (i + 3) < boardRows:
+                        if 0 <= (j - 3):
+                            print("ai 3iar diagonals left: j-3") 
+                            if squares2dArray[(i + 3),(j - 3)] == 0:  # open to make 4iar
+                                if (i + 3) == 5:
+                                    playColumn = j - 3
+                                    print("ai 3iar diagonals left: playColumn =",playColumn) 
+                                    run_ai = False
+                                elif (i + 3) < 5:
+                                    if squares2dArray[(i + 4),(j - 3)] != 0:  # support to make 4iar
+                                        playColumn = j - 3
+                                        print("ai 3iar diagonals left: playColumn =",playColumn) 
+                                        run_ai = False
+                                    elif squares2dArray[(i + 4),(j - 3)] == 0:  # support to make 4iar
+                                        avoidColumns[j - 3] = 1
+
+        # debug
+        print("")
+        print("# avoidColumns =",avoidColumns)
+
+        print("")
+        print("## check 2iar:")
         # scan board, add up how many 2iar for both ai & human, use in algo
         # check rows
         numInRow = 0
@@ -897,256 +1169,268 @@ def computer_ai():
             for j in range(6):
                 numInRow = squares2dArray[i,j] + squares2dArray[i,j+1]
                 if numInRow == -2:  # ai
-                    print("numInRow = ",numInRow)
+                    print("numInRow =",numInRow)
                     # debug: hilite winning discs (remove this later)
                     squaresArray[i*boardCols + j].hilite = debugHilite
                     squaresArray[i*boardCols + j+1].hilite = debugHilite
                     if 0 <= (j - 1):
-                        print("ai 2iar rows: j-1")  # debug
+                        print("ai 2iar rows: j-1") 
                         if squares2dArray[i,(j - 1)] == 0:  # open to make 3iar
                             if i == 5:
-                                playColumn = j - 1
-                                run_ai = False
-                            elif i < boardRows - 1:
-                                if squares2dArray[(i + 1),(j - 1)] != 0:  # support to make 3iar
+                                if avoidColumns[j - 1] == 0:
                                     playColumn = j - 1
                                     run_ai = False
+                            elif i < boardRows - 1:
+                                if squares2dArray[(i + 1),(j - 1)] != 0:  # support to make 3iar
+                                    if avoidColumns[j - 1] == 0:
+                                        playColumn = j - 1
+                                        run_ai = False
                     if (j + 2) < boardCols:
-                        print("ai 2iar rows: j+2")  # debug
+                        print("ai 2iar rows: j+2") 
                         if squares2dArray[i,(j + 2)] == 0:  # open to make 3iar
                             if i == 5:
-                                playColumn = j + 2
-                                print("ai rows: playColumn = ",playColumn)  # debug
-                                run_ai = False
+                                if avoidColumns[j + 2] == 0:
+                                    playColumn = j + 2
+                                    print("ai rows: playColumn =",playColumn) 
+                                    run_ai = False
                             elif i < boardRows - 1:
                                 if squares2dArray[(i + 1),(j + 2)] != 0:  # support to make 3iar
-                                    playColumn = j + 2
-                                    print("ai rows: playColumn = ",playColumn)  # debug
-                                    run_ai = False
-                    #run_ai = False
+                                    if avoidColumns[j + 2] == 0:
+                                        playColumn = j + 2
+                                        print("ai rows: playColumn =",playColumn) 
+                                        run_ai = False
                 elif numInRow == 2:    # human
-                    print("numInRow = ",numInRow)
+                    print("numInRow =",numInRow)
                     # debug: hilite winning discs (remove this later)
                     squaresArray[i*boardCols + j].hilite = debugHilite
                     squaresArray[i*boardCols + j+1].hilite = debugHilite
                     if 0 <= (j - 1):
-                        print("ai 2iar rows: j-1")  # debug
+                        print("ai 2iar rows: j-1") 
                         if squares2dArray[i,(j - 1)] == 0:  # open to make 3iar
                             if i == 5:
-                                playColumn = j - 1
-                                run_ai = False
-                            elif i < boardRows - 1:
-                                if squares2dArray[(i + 1),(j - 1)] != 0:  # support to make 3iar
+                                if avoidColumns[j - 1] == 0:
                                     playColumn = j - 1
                                     run_ai = False
+                            elif i < boardRows - 1:
+                                if squares2dArray[(i + 1),(j - 1)] != 0:  # support to make 3iar
+                                    if avoidColumns[j - 1] == 0:
+                                        playColumn = j - 1
+                                        run_ai = False
                     if (j + 2) < boardCols:
-                        print("ai 2iar rows: j+2")  # debug
+                        print("ai 2iar rows: j+2") 
                         if squares2dArray[i,(j + 2)] == 0:  # open to make 3iar
                             if i == 5:
-                                playColumn = j + 2
-                                print("ai rows: playColumn = ",playColumn)  # debug
-                                run_ai = False
+                                if avoidColumns[j + 2] == 0:
+                                    playColumn = j + 2
+                                    print("ai rows: playColumn =",playColumn) 
+                                    run_ai = False
                             elif i < boardRows - 1:
                                 if squares2dArray[(i + 1),(j + 2)] != 0:  # support to make 3iar
-                                    playColumn = j + 2
-                                    print("ai rows: playColumn = ",playColumn)  # debug
-                                    run_ai = False
-                    #run_ai = False
+                                    if avoidColumns[j + 2] == 0:
+                                        playColumn = j + 2
+                                        print("ai rows: playColumn =",playColumn) 
+                                        run_ai = False
         # check columns
         numInRow = 0
         for i in range(5):
             for j in range(boardCols):
                 numInRow = squares2dArray[i,j] + squares2dArray[i+1,j]
                 if numInRow == -2:  # ai
-                    print("numInRow = ",numInRow)
+                    print("numInRow =",numInRow)
                     # debug: hilite winning discs (remove this later)
                     squaresArray[i*boardCols + j].hilite = debugHilite
                     squaresArray[(i+1)*boardCols + j].hilite = debugHilite
                     if 0 <= (i - 1):
                         print("ai 2iar cols: i-1")
                         if squares2dArray[i - 1,j] == 0:  # open to make 3iar
-                            playColumn = j
-                            print("ai 2iar rows: playColumn = ",playColumn)
-                            run_ai = False
+                            if avoidColumns[j] == 0:
+                                playColumn = j
+                                print("ai 2iar rows: playColumn =",playColumn)
+                                run_ai = False
                 elif numInRow == 2:    # human
-                    print("numInRow = ",numInRow)
+                    print("numInRow =",numInRow)
                     # debug: hilite winning discs (remove this later)
                     squaresArray[i*boardCols + j].hilite = debugHilite
                     squaresArray[(i+1)*boardCols + j].hilite = debugHilite
                     if 0 <= (i - 1):
                         print("ai 2iar cols: i-1")
                         if squares2dArray[i - 1,j] == 0:  # open to make 3iar
-                            playColumn = j
-                            print("ai 2iar rows: playColumn = ",playColumn)
-                            run_ai = False
-                    #run_ai = False
+                            if avoidColumns[j] == 0:
+                                playColumn = j
+                                print("ai 2iar rows: playColumn =",playColumn)
+                                run_ai = False
         # check diagonals right
         numInRow = 0
         for i in range(5):
             for j in range(6):
                 numInRow = squares2dArray[i,j] + squares2dArray[i+1,j+1]
                 if numInRow == -2:  # ai
-                    print("numInRow = ",numInRow)
+                    print("numInRow =",numInRow)
                     # debug: hilite winning discs (remove this later)
                     squaresArray[i*boardCols + j].hilite = debugHilite
                     squaresArray[(i+1)*boardCols + j+1].hilite = debugHilite
                     if 0 <= (i - 1):
                         if 0 <= (j - 1):
-                            print("ai 2iar diagonals right: j-1")  # debug
+                            print("ai 2iar diagonals right: j-1") 
                             if squares2dArray[(i - 1),(j - 1)] == 0:  # open to make 3iar
                                 if squares2dArray[i,(j - 1)] != 0:  # support to make 3iar
-                                    playColumn = j - 1
-                                    run_ai = False
+                                    if avoidColumns[j - 1] == 0:
+                                        playColumn = j - 1
+                                        run_ai = False
                     if (i + 2) < boardRows:
                         if (j + 2) < boardCols:
-                            print("ai 2iar diagonals right: j+2")  # debug
+                            print("ai 2iar diagonals right: j+2") 
                             if squares2dArray[(i + 2),(j + 2)] == 0:  # open to make 3iar
                                 if (i + 2) == 5:
-                                    playColumn = j + 2
-                                    print("ai 2iar 2iar diagonals: playColumn = ",playColumn)  # debug
-                                    run_ai = False
+                                    if avoidColumns[j + 2] == 0:
+                                        playColumn = j + 2
+                                        print("ai 2iar 2iar diagonals: playColumn =",playColumn) 
+                                        run_ai = False
                                 elif (i + 2) < 5:
                                     if squares2dArray[(i + 3),(j + 2)] != 0:  # support to make 3iar
-                                        playColumn = j + 2
-                                        print("ai 2iar 2iar diagonals: playColumn = ",playColumn)  # debug
-                                        run_ai = False
+                                        if avoidColumns[j + 2] == 0:
+                                            playColumn = j + 2
+                                            print("ai 2iar 2iar diagonals: playColumn =",playColumn) 
+                                            run_ai = False
                     #run_ai = False
                 elif numInRow == 2:    # human
-                    print("numInRow = ",numInRow)
+                    print("numInRow =",numInRow)
                     # debug: hilite winning discs (remove this later)
                     squaresArray[i*boardCols + j].hilite = debugHilite
                     squaresArray[(i+1)*boardCols + j+1].hilite = debugHilite
                     if 0 <= (i - 1):
                         if 0 <= (j - 1):
-                            print("ai 2iar diagonals right: j-1")  # debug
+                            print("ai 2iar diagonals right: j-1") 
                             if squares2dArray[(i - 1),(j - 1)] == 0:  # open to make 3iar
                                 if squares2dArray[i,(j - 1)] != 0:  # support to make 3iar
-                                    playColumn = j - 1
-                                    run_ai = False
+                                    if avoidColumns[j - 1] == 0:
+                                        playColumn = j - 1
+                                        run_ai = False
                     if (i + 2) < boardRows:
                         if (j + 2) < boardCols:
-                            print("ai 2iar diagonals right: j+2")  # debug
+                            print("ai 2iar diagonals right: j+2") 
                             if squares2dArray[(i + 2),(j + 2)] == 0:  # open to make 3iar
                                 if (i + 2) == 5:
-                                    playColumn = j + 2
-                                    print("ai 2iar diagonals: playColumn = ",playColumn)  # debug
-                                    run_ai = False
+                                    if avoidColumns[j + 2] == 0:
+                                        playColumn = j + 2
+                                        print("ai 2iar diagonals: playColumn =",playColumn) 
+                                        run_ai = False
                                 elif (i + 2) < 5:
                                     if squares2dArray[(i + 3),(j + 2)] != 0:  # support to make 3iar
-                                        playColumn = j + 2
-                                        print("ai 2iar diagonals: playColumn = ",playColumn)  # debug
-                                        run_ai = False
-                    #run_ai = False
+                                        if avoidColumns[j + 2] == 0:
+                                            playColumn = j + 2
+                                            print("ai 2iar diagonals: playColumn =",playColumn) 
+                                            run_ai = False
         # check diagonals left
         numInRow = 0
         for i in range(5):
             for j in range(1,boardCols):
                 numInRow = squares2dArray[i,j] + squares2dArray[i+1,j-1]
+                # ai
                 if numInRow == -2:  # ai
-                    print("numInRow = ",numInRow)
+                    print("numInRow =",numInRow)
                     # debug: hilite winning discs (remove this later)
                     squaresArray[i*boardCols + j].hilite = debugHilite
                     squaresArray[(i+1)*boardCols + j-1].hilite = debugHilite
                     if 0 <= (i - 1):
                         if (j + 1) < boardCols:
-                            print("ai 2iar diagonals left: i-1")  # debug
+                            print("ai 2iar diagonals left: i-1") 
                             if squares2dArray[(i - 1),(j + 1)] == 0:  # open to make 3iar
                                 if squares2dArray[i,(j + 1)] != 0:  # support to make 3iar
-                                    playColumn = j + 1
-                                    run_ai = False
+                                    if avoidColumns[j + 1] == 0:
+                                        playColumn = j + 1
+                                        run_ai = False
                     if (i + 2) < boardRows:
                         if 0 <= (j - 2):
-                            print("ai 2iar diagonals right: j-2")  # debug
+                            print("ai 2iar diagonals right: j-2") 
                             if squares2dArray[(i + 2),(j - 2)] == 0:  # open to make 3iar
                                 if (i + 2) == 5:
-                                    playColumn = j - 2
-                                    print("ai 2iar diagonals left: playColumn = ",playColumn)  # debug
-                                    run_ai = False
+                                    if avoidColumns[j - 2] == 0:
+                                        playColumn = j - 2
+                                        print("ai 2iar diagonals left: playColumn =",playColumn) 
+                                        run_ai = False
                                 elif (i + 2) < 5:
                                     if squares2dArray[(i + 3),(j - 2)] != 0:  # support to make 3iar
-                                        playColumn = j - 2
-                                        print("ai 2iar diagonals left: playColumn = ",playColumn)  # debug
-                                        run_ai = False
-                    #run_ai = False
+                                        if avoidColumns[j - 2] == 0:
+                                            playColumn = j - 2
+                                            print("ai 2iar diagonals left: playColumn =",playColumn) 
+                                            run_ai = False
+                # human
                 elif numInRow == 2:    # human
                     danger = 3
-                    print("numInRow = ",numInRow)
+                    print("numInRow =",numInRow)
                     # debug: hilite winning discs (remove this later)
                     squaresArray[i*boardCols + j].hilite = debugHilite
                     squaresArray[(i+1)*boardCols + j-1].hilite = debugHilite
                     if 0 <= (i - 1):
                         if (j + 1) < boardCols:
-                            print("ai 2iar diagonals left: i-1")  # debug
+                            print("ai 2iar diagonals left: i-1") 
                             if squares2dArray[(i - 1),(j + 1)] == 0:  # open to make 3iar
                                 if squares2dArray[i,(j + 1)] != 0:  # support to make 3iar
-                                    playColumn = j + 1
-                                    run_ai = False
+                                    if avoidColumns[j + 1] == 0:
+                                        playColumn = j + 1
+                                        run_ai = False
                     if (i + 2) < boardRows:
                         if 0 <= (j - 2):
-                            print("ai 2iar diagonals right: j-2")  # debug
+                            print("ai 2iar diagonals right: j-2") 
                             if squares2dArray[(i + 2),(j - 2)] == 0:  # open to make 3iar
                                 if (i + 2) == 5:
-                                    playColumn = j - 2
-                                    print("ai 2iar diagonals left: playColumn = ",playColumn)  # debug
-                                    run_ai = False
+                                        if avoidColumns[j - 2] == 0:
+                                            playColumn = j - 2
+                                            print("ai 2iar diagonals left: playColumn =",playColumn) 
+                                            run_ai = False
                                 elif (i + 2) < 5:
                                     if squares2dArray[(i + 3),(j - 2)] != 0:  # support to make 3iar
-                                        playColumn = j - 2
-                                        print("ai 2iar diagonals left: playColumn = ",playColumn)  # debug
-                                        run_ai = False
-                    #run_ai = False
+                                        if avoidColumns[j - 2] == 0:
+                                            playColumn = j - 2
+                                            print("ai 2iar diagonals left: playColumn =",playColumn) 
+                                            run_ai = False
 
-        ##  3iar:
+        print("## check 3iar: second pass")
         # scan board, add up how many 3iar for both ai & human, use in algo
         # check rows
         numInRow = 0
         for i in range(boardRows):
             for j in range(5):
                 numInRow = squares2dArray[i,j] + squares2dArray[i,j+1] + squares2dArray[i,j+2]
+                # ai
                 if numInRow == -3:   # ai
-                    print("numInRow = ",numInRow)  # debug
-                    # debug: hilite winning discs (remove this later)
-                    #squaresArray[i*boardCols + j].hilite = True
-                    #squaresArray[i*boardCols + j+1].hilite = True
-                    #squaresArray[i*boardCols + j+2].hilite = True
+                    print("numInRow =",numInRow)
                     if 0 <= (j - 1):
-                        print("ai 3iar rows: j-1")  # debug
+                        print("ai 3iar rows: j-1")
                         if squares2dArray[i,(j - 1)] == 0:  # open to make 4iar
                             squaresArray[i*boardCols + j].hilite = debugHilite
                             squaresArray[i*boardCols + j+1].hilite = debugHilite
                             squaresArray[i*boardCols + j+2].hilite = debugHilite
                             if i == 5:
                                 playColumn = j - 1
-                                print("ai 3iar rows: playColumn = ",playColumn)  # debug
+                                print("ai 3iar rows: playColumn =",playColumn)
                                 run_ai = False
                             elif i < boardRows - 1:
                                 if squares2dArray[(i + 1),(j - 1)] != 0:  # support to make 3iar
                                     playColumn = j - 1
-                                    print("ai 3iar rows: playColumn = ",playColumn)  # debug
+                                    print("ai 3iar rows: playColumn =",playColumn)
                                     run_ai = False
                     if (j + 3) < boardCols:
-                        print("ai 3iar rows: j+3")  # debug
+                        print("ai 3iar rows: j+3")
                         if squares2dArray[i,(j + 3)] == 0:  # open to make 4iar
                             squaresArray[i*boardCols + j].hilite = debugHilite
                             squaresArray[i*boardCols + j+1].hilite = debugHilite
                             squaresArray[i*boardCols + j+2].hilite = debugHilite
                             if i == 5:
                                 playColumn = j + 3
-                                print("ai 3iar rows: playColumn = ",playColumn)  # debug
+                                print("ai 3iar rows: playColumn =",playColumn) 
                                 run_ai = False
                             elif i < boardRows - 1:
                                 if squares2dArray[(i + 1),(j + 3)] != 0:  # support to make 4iar
                                     playColumn = j + 3
-                                    print("ai 3iar rows: playColumn = ",playColumn)  # debug
+                                    print("ai 3iar rows: playColumn =",playColumn) 
                                     run_ai = False
+                # human
                 elif numInRow == 3:  # human
-                    print("numInRow = ",numInRow)
-                    # debug: hilite winning discs (remove this later)
-                    #squaresArray[i*boardCols + j].hilite = True
-                    #squaresArray[i*boardCols + j+1].hilite = True
-                    #squaresArray[i*boardCols + j+2].hilite = True
+                    print("numInRow =",numInRow)
                     if 0 <= (j - 1):
-                        print("ai 3iar rows: j-1")  # debug
+                        print("ai 3iar rows: j-1") 
                         if squares2dArray[i,(j - 1)] == 0:  # open to block 4iar
                             squaresArray[i*boardCols + j].hilite = debugHilite
                             squaresArray[i*boardCols + j+1].hilite = debugHilite
@@ -1158,6 +1442,8 @@ def computer_ai():
                                 if squares2dArray[(i + 1),(j - 1)] != 0:  # support to block 4iar
                                     playColumn = j - 1
                                     run_ai = False
+                                elif squares2dArray[(i + 1),(j - 1)] == 0:  # avoid col
+                                    avoidColumns[j - 1] = 1
                     if (j + 3) < boardCols:
                         print("ai 3iar rows: j+3")
                         if squares2dArray[i,(j + 3)] == 0:  # open to block 4iar
@@ -1166,25 +1452,22 @@ def computer_ai():
                             squaresArray[i*boardCols + j+2].hilite = debugHilite
                             if i == 5:
                                 playColumn = j + 3
-                                print("ai 3iar colsrows: playColumn = ",playColumn)  # debug
+                                print("ai 3iar colsrows: playColumn =",playColumn) 
                                 run_ai = False
                             elif i < boardRows - 1:
                                 if squares2dArray[(i + 1),(j + 3)] != 0:  # support to block 4iar
                                     playColumn = j + 3
-                                    print("ai 3iar colsrows: playColumn = ",playColumn)  # debug
+                                    print("ai 3iar colsrows: playColumn =",playColumn) 
                                     run_ai = False
-                    #run_ai = False
+                                elif squares2dArray[(i + 1),(j + 3)] == 0:    # avoid col
+                                    avoidColumns[j + 3] = 1
         # check columns
         numInRow = 0
         for i in range(4):
             for j in range(boardCols):
                 numInRow = squares2dArray[i,j] + squares2dArray[i+1,j] + squares2dArray[i+2,j]
                 if numInRow == -3:  # ai
-                    print("numInRow = ",numInRow)  # debug
-                    # debug: hilite winning discs (remove this later)
-                    #squaresArray[i*boardCols + j].hilite = True
-                    #squaresArray[(i+1)*boardCols + j].hilite = True
-                    #squaresArray[(i+2)*boardCols + j].hilite = True
+                    print("numInRow =",numInRow) 
                     if 0 <= (i - 1):
                         print("ai 3iar cols: i-1")
                         if squares2dArray[i - 1,j] == 0:  # open to make 4iar
@@ -1192,14 +1475,10 @@ def computer_ai():
                             squaresArray[(i+1)*boardCols + j].hilite = debugHilite
                             squaresArray[(i+2)*boardCols + j].hilite = debugHilite
                             playColumn = j
-                            print("ai 3iar cols: playColumn = ",playColumn)
+                            print("ai 3iar cols: playColumn =",playColumn)
                             run_ai = False
                 elif numInRow == 3:    # human
-                    print("numInRow = ",numInRow)  # debug
-                    # debug: hilite winning discs (remove this later)
-                    #squaresArray[i*boardCols + j].hilite = True
-                    #squaresArray[(i+1)*boardCols + j].hilite = True
-                    #squaresArray[(i+2)*boardCols + j].hilite = True
+                    print("numInRow =",numInRow) 
                     if 0 <= (i - 1):
                         print("ai 3iar cols: i-1")
                         if squares2dArray[i - 1,j] == 0:  # open to make 4iar
@@ -1207,193 +1486,292 @@ def computer_ai():
                             squaresArray[(i+1)*boardCols + j].hilite = debugHilite
                             squaresArray[(i+2)*boardCols + j].hilite = debugHilite
                             playColumn = j
-                            print("ai 3iar cols: playColumn = ",playColumn)
+                            print("ai 3iar cols: playColumn =",playColumn)
                             run_ai = False
-                #run_ai = False
         # check diagonals right
         numInRow = 0
         for i in range(4):
             for j in range(5):
-                numInRow = squares2dArray[i,j] + squares2dArray[i+1,j+1] + squares2dArray[i+2,j+2]
+                numInRow = squares2dArray[i,j] + squares2dArray[i+1,j+1] + squares2dArray[i+2,j+2]    # add num in diagonal
                 if numInRow == -3:  # ai
-                    print("numInRow = ",numInRow)  # debug
-                    # debug: hilite winning discs (remove this later)
-                    #squaresArray[i*boardCols + j].hilite = True
-                    #squaresArray[(i+1)*boardCols + j+1].hilite = True
-                    #squaresArray[(i+2)*boardCols + j+2].hilite = True
+                    print("numInRow =",numInRow) 
                     if 0 <= (i - 1):
                         if 0 <= (j - 1):
-                            print("ai 3iar diagonals right: j-1")  # debug
+                            print("ai 3iar diagonals right: j-1") 
                             if squares2dArray[(i - 1),(j - 1)] == 0:  # open to make 4iar
                                 squaresArray[i*boardCols + j].hilite = debugHilite
                                 squaresArray[(i+1)*boardCols + j+1].hilite = debugHilite
                                 squaresArray[(i+2)*boardCols + j+2].hilite = debugHilite
                                 if squares2dArray[i,(j - 1)] != 0:  # support to make 4iar
                                     playColumn = j - 1
-                                    print("ai 3iar diagonals right: playColumn = ",playColumn)  # debug
+                                    print("ai 3iar diagonals right: playColumn =",playColumn) 
                                     run_ai = False
                     if (i + 3) < boardRows:
                         if (j + 3) < boardCols:
-                            print("ai 3iar diagonals right: j+3")  # debug
+                            print("ai 3iar diagonals right: j+3") 
                             if squares2dArray[(i + 3),(j + 3)] == 0:  # open to make 4iar
                                 squaresArray[i*boardCols + j].hilite = debugHilite
                                 squaresArray[(i+1)*boardCols + j+1].hilite = debugHilite
                                 squaresArray[(i+2)*boardCols + j+2].hilite = debugHilite
                                 if (i + 3) == 5:
                                     playColumn = j + 3
-                                    print("ai 3iar diagonals right: playColumn = ",playColumn)  # debug
+                                    print("ai 3iar diagonals right: playColumn =",playColumn) 
                                     run_ai = False
                                 elif (i + 3) < 5:
                                     if squares2dArray[(i + 4),(j + 3)] != 0:  # support to make 4iar
                                         playColumn = j + 3
-                                        print("ai 3iar diagonals right: playColumn = ",playColumn)  # debug
+                                        print("ai 3iar diagonals right: playColumn =",playColumn) 
                                         run_ai = False
-                    #run_ai = False
                 elif numInRow == 3:    # human
-                    print("numInRow = ",numInRow)  # debug
-                    # debug: hilite winning discs (remove this later)
-                    #squaresArray[i*boardCols + j].hilite = True
-                    #squaresArray[(i+1)*boardCols + j+1].hilite = True
-                    #squaresArray[(i+2)*boardCols + j+2].hilite = True
+                    print("numInRow =",numInRow) 
                     if 0 <= (i - 1):
                         if 0 <= (j - 1):
-                            print("ai 3iar diagonals right: j-1")  # debug
+                            print("ai 3iar diagonals right: j-1") 
                             if squares2dArray[(i - 1),(j - 1)] == 0:  # open to make 4iar
                                 squaresArray[i*boardCols + j].hilite = debugHilite
                                 squaresArray[(i+1)*boardCols + j+1].hilite = debugHilite
                                 squaresArray[(i+2)*boardCols + j+2].hilite = debugHilite
                                 if squares2dArray[i,(j - 1)] != 0:  # support to make 4iar
                                     playColumn = j - 1
-                                    print("ai 3iar diagonals right: playColumn = ",playColumn)  # debug
+                                    print("ai 3iar diagonals right: playColumn =",playColumn) 
                                     run_ai = False
+                                elif squares2dArray[i,(j - 1)] == 0:    # avoid col
+                                    avoidColumns[j - 1] = 1
                     if (i + 3) < boardRows:
                         if (j + 3) < boardCols:
-                            print("ai 3iar diagonals right: j+3")  # debug
+                            print("ai 3iar diagonals right: j+3") 
                             if squares2dArray[(i + 3),(j + 3)] == 0:  # open to make 4iar
                                 squaresArray[i*boardCols + j].hilite = debugHilite
                                 squaresArray[(i+1)*boardCols + j+1].hilite = debugHilite
                                 squaresArray[(i+2)*boardCols + j+2].hilite = debugHilite
                                 if (i + 3) == 5:
                                     playColumn = j + 3
-                                    print("ai 3iar diagonals right: playColumn = ",playColumn)  # debug
+                                    print("ai 3iar diagonals right: playColumn =",playColumn) 
                                     run_ai = False
                                 elif (i + 3) < 5:
                                     if squares2dArray[(i + 4),(j + 3)] != 0:  # support to make 4iar
                                         playColumn = j + 3
-                                        print("ai 3iar diagonals right: playColumn = ",playColumn)  # debug
+                                        print("ai 3iar diagonals right: playColumn =",playColumn) 
                                         run_ai = False
-                    #run_ai = False
+                                    elif squares2dArray[(i + 4),(j + 3)] == 0:    # avoid col
+                                        avoidColumns[j + 3] = 1
         # check diagonals left
         numInRow = 0
         for i in range(4):
             for j in range(2,boardCols):
                 numInRow = squares2dArray[i,j] + squares2dArray[i+1,j-1] + squares2dArray[i+2,j-2]
+                # ai
                 if numInRow == -3:  # ai
-                    print("numInRow = ",numInRow)  # debug
+                    print("numInRow =",numInRow) 
                     # debug: hilite winning discs (remove this later)
                     squaresArray[i*boardCols + j].hilite = debugHilite
                     squaresArray[(i+1)*boardCols + j-1].hilite = debugHilite
                     squaresArray[(i+2)*boardCols + j-2].hilite = debugHilite
                     if 0 <= (i - 1):
                         if (j + 1) < boardCols:
-                            print("ai 3iar diagonals left: i-1")  # debug
+                            print("ai 3iar diagonals left: i-1") 
                             if squares2dArray[(i - 1),(j + 1)] == 0:  # open to make 4iar
                                 if squares2dArray[i,(j + 1)] != 0:  # support to make 4iar
                                     playColumn = j + 1
-                                    print("ai 3iar diagonals left: playColumn = ",playColumn)  # debug
+                                    print("ai 3iar diagonals left: playColumn =",playColumn) 
                                     run_ai = False
                     if (i + 3) < boardRows:
                         if 0 <= (j - 3):
-                            print("ai 3iar diagonals left: j-3")  # debug
+                            print("ai 3iar diagonals left: j-3") 
                             if squares2dArray[(i + 3),(j - 3)] == 0:  # open to make 4iar
                                 if (i + 3) == 5:
                                     playColumn = j - 3
-                                    print("ai 3iar diagonals left: playColumn = ",playColumn)  # debug
+                                    print("ai 3iar diagonals left: playColumn =",playColumn) 
                                     run_ai = False
                                 elif (i + 3) < 5:
                                     if squares2dArray[(i + 4),(j - 3)] != 0:  # support to make 4iar
                                         playColumn = j - 3
-                                        print("ai 3iar diagonals left: playColumn = ",playColumn)  # debug
+                                        print("ai 3iar diagonals left: playColumn =",playColumn) 
                                         run_ai = False
-                    #run_ai = False
+                # human
                 elif numInRow == 3:    # human
-                    print("numInRow = ",numInRow)  # debug
+                    print("numInRow =",numInRow) 
                     # debug: hilite winning discs (remove this later)
                     squaresArray[i*boardCols + j].hilite = debugHilite
                     squaresArray[(i+1)*boardCols + j-1].hilite = debugHilite
                     squaresArray[(i+2)*boardCols + j-2].hilite = debugHilite
                     if 0 <= (i - 1):
                         if (j + 1) < boardCols:
-                            print("ai 3iar diagonals left: i-1")  # debug
+                            print("ai 3iar diagonals left: i-1") 
                             if squares2dArray[(i - 1),(j + 1)] == 0:  # open to make 4iar
                                 if squares2dArray[i,(j + 1)] != 0:  # support to make 4iar
                                     playColumn = j + 1
-                                    print("ai 3iar diagonals left: playColumn = ",playColumn)  # debug
+                                    print("ai 3iar diagonals left: playColumn =",playColumn) 
                                     run_ai = False
+                                elif squares2dArray[i,(j + 1)] == 0:    # avoid col
+                                    avoidColumns[j + 1] = 1
                     if (i + 3) < boardRows:
                         if 0 <= (j - 3):
-                            print("ai 3iar diagonals left: j-3")  # debug
+                            print("ai 3iar diagonals left: j-3") 
                             if squares2dArray[(i + 3),(j - 3)] == 0:  # open to make 4iar
                                 if (i + 3) == 5:
                                     playColumn = j - 3
-                                    print("ai 3iar diagonals left: playColumn = ",playColumn)  # debug
+                                    print("ai 3iar diagonals left: playColumn =",playColumn) 
                                     run_ai = False
                                 elif (i + 3) < 5:
                                     if squares2dArray[(i + 4),(j - 3)] != 0:  # support to make 4iar
                                         playColumn = j - 3
-                                        print("ai 3iar diagonals left: playColumn = ",playColumn)  # debug
+                                        print("ai 3iar diagonals left: playColumn =",playColumn) 
                                         run_ai = False
-                    #run_ai = False
+                                    elif squares2dArray[(i + 4),(j - 3)] == 0:  # support to make 4iar
+                                        avoidColumns[j - 3] = 1
 
-#        # check for full columns here...
-#        # then what?
-#        # temporary...
-#        print("ai check for full columns...")  # debug
-#        print("playColumn = ",playColumn)   # debug
-#        print(squares2dArray)
-#        if squares2dArray[0,playColumn] != 0:  # column is full
-#            if leftRight == 0:  # left
-##            if playColumn == 0:
-#                for i in range(boardCols):
-#                    if squares2dArray[0,i] == 0:  # column is empty
-#                        playColumn = i
-#                        run_ai = False
-#                    else:
-##                        winner = 2   # draw
-#                        run_ai = False
-#                        winnerCheck()
-#            elif leftRight == 1:  # right
-##            elif playColumn == 6:
-#                for i in range(boardCols-1,-1):
-#                    if squares2dArray[0,i] == 0:  # column is empty
-#                        playColumn = i
-#                        run_ai = False
-#                    else:
-#                        winner = 2   # draw
-#                        run_ai = False
-#                        winnerCheck()
-#
-##            if leftRight == 0:  # left
-##                if squares2dArray[0,playColumn - 1] == 0:  # column is empty
-##                    playColumn = playColumn - 1
-##                elif squares2dArray[0,playColumn + 1] == 0:  # column is empty
-##                    playColumn = playColumn + 1
-##            elif leftRight == 1:  # right
-##                if squares2dArray[0,playColumn + 1] == 0:  # column is empty
-##                    playColumn = playColumn + 1
-##                elif squares2dArray[0,playColumn - 1] == 0:  # column is empty
-##                    playColumn = playColumn - 1
+        print("")
+        print("## gap check 3/4: second pass")
+        # scan board, add up how many 3/4 gap plays there are for both ai & human, use in algo
+        # check rows
+        numInRow = 0
+        for i in range(boardRows):
+            for j in range(4):    # stops after col 3
+                numInRow = squares2dArray[i,j] + squares2dArray[i,j+1] + squares2dArray[i,j+2] + squares2dArray[i,j+3]
+                # ai
+                if numInRow == -3:   # ai
+                    print("numInRow =",numInRow)
+                    for k in range(4):
+                        if squares2dArray[i,j + k] == 0:
+                            if i == 5:
+                                playColumn = j + k
+                                print("ai 3/4 gap: playColumn =",playColumn)
+                                run_ai = False
+                            elif squares2dArray[(i + 1),(j + k)] != 0:    # support to make 4iar
+                                playColumn = j + k
+                                print("ai 3/4 gap: playColumn =",playColumn)
+                                run_ai = False
+                # human
+                elif numInRow == 3:    # human
+                    print("numInRow =",numInRow)
+                    for k in range(4):
+                        if squares2dArray[i,j + k] == 0:
+                            if i == 5:
+                                playColumn = j + k
+                                print("ai 3/4 gap: playColumn =",playColumn)
+                                run_ai = False
+                            elif squares2dArray[(i + 1),(j + k)] != 0:    # support to fill gap (block it)
+                                playColumn = j + k
+                                print("ai 3/4 gap: playColumn =",playColumn)
+                                run_ai = False
+                            elif squares2dArray[(i + 1),(j + k)] == 0:    # avoid col
+                                avoidColumns[j + k] = 1
+
+        # check diagonals right, starting from top left corner
+        numInRow = 0
+        for i in range(3):
+            for j in range(4):
+                numInRow = squares2dArray[i,j] + squares2dArray[i+1,j+1] + squares2dArray[i+2,j+2] + squares2dArray[i+3,j+3]    # add num in diagonal
+                # ai
+                if numInRow == -3:  # ai
+                    print("numInRow =",numInRow) 
+                    for k in range(4):
+                        if squares2dArray[i + k,j + k] == 0:
+                            if squares2dArray[(i + k + 1),(j + k)] != 0:    # support to make 4iar
+                                playColumn = j + k
+                                print("ai 3/4 gap: playColumn =",playColumn)
+                                run_ai = False
+                # human
+                elif numInRow == 3:    # human
+                    print("numInRow =",numInRow) 
+                    for k in range(4):
+                        if squares2dArray[i + k,j + k] == 0:
+                            if squares2dArray[(i + k + 1),(j + k)] != 0:    # support to fill gap (block it)
+                                playColumn = j + k
+                                print("ai 3/4 gap: playColumn =",playColumn)
+                                run_ai = False
+                            elif squares2dArray[(i + k + 1),(j + k)] == 0:    # avoid col
+                                avoidColumns[j + k] = 1
+
+        # check diagonals left, starting from top right corner
+        numInRow = 0
+        for i in range(3):
+            for j in range(3,boardCols):
+                numInRow = squares2dArray[i,j] + squares2dArray[i+1,j-1] + squares2dArray[i+2,j-2] + squares2dArray[i+3,j-3]    # add num in diagonal
+                # ai
+                if numInRow == -3:  # ai
+                    print("numInRow =",numInRow) 
+                    for k in range(4):
+                        if squares2dArray[i + k,j - k] == 0:
+                            if squares2dArray[(i + k + 1),(j - k)] != 0:    # support to make 4iar
+                                playColumn = j - k
+                                print("ai 3/4 gap: playColumn =",playColumn)
+                                run_ai = False
+                # human
+                elif numInRow == 3:    # human
+                    print("numInRow =",numInRow) 
+                    for k in range(4):
+                        if squares2dArray[i + k,j - k] == 0:
+                            if squares2dArray[(i + k + 1),(j - k)] != 0:    # support to fill gap (block it)
+                                playColumn = j - k
+                                print("ai 3/4 gap: playColumn =",playColumn)
+                                run_ai = False
+                            elif squares2dArray[(i + k + 1),(j - k)] == 0:    # avoid col
+                                avoidColumns[j + k] = 1
+
+        # debug
+        print("")
+        print("# avoidColumns =",avoidColumns)
 
         redrawWindow()
-        print("ai exit: playColumn = ",playColumn)   # debug
+        print("# ai exit: playColumn =",playColumn)
         run_ai = False
 
-#def computer_ai(): end
+    # end computer_ai()
+
+
+#------------------------------------------------------
+def fullColumnCheck():    # check for full column move
+
+    global playColumn
+    global avoidColumns
+
+    # this is just a dumb search for an open column
+    # added avoidColumn array checking
+    # do I still need this?
+
+    print("")
+    print("ai check for full columns...") 
+    print("playColumn =",playColumn)  
+    print(squares2dArray)
+    if squares2dArray[0,playColumn] != 0:    # column is full
+        print("** column is full, searching for an open column...")    # to see if I still need this function
+        # debug
+        print("# avoidColumns =",avoidColumns)
+        if leftRight == 0:  # left
+            for i in range(boardCols):
+                if 0 <= (playColumn - i):
+                    if squares2dArray[0,playColumn - i] == 0:  # column top is empty
+                        if avoidColumns[playColumn - i] == 0:
+                            playColumn = playColumn - i
+                            break
+                elif (playColumn + i) < boardCols:
+                    if squares2dArray[0,playColumn + i] == 0:  # column top is empty
+                        if avoidColumns[playColumn + i] == 0:
+                            playColumn = playColumn + i
+                            break
+        elif leftRight == 1:  # right
+            for i in range(boardCols):
+                if (playColumn + i) < boardCols:
+                    if squares2dArray[0,playColumn + i] == 0:  # column top is empty
+                        if avoidColumns[playColumn + i] == 0:
+                            playColumn = playColumn + i
+                            break
+                elif 0 <= (playColumn - i):
+                    if squares2dArray[0,playColumn - i] == 0:  # column top is empty
+                        if avoidColumns[playColumn - i] == 0:
+                            playColumn = playColumn - i
+                            break
+
+    print("fullColumnCheck exit: playColumn =",playColumn)   # debug
+    # end fullColumnCheck()
 
 
 #------------------------------------------------------
 def dropDisc(column,color):
     print("dropDisc")
+
     global squaresArray
     run_dd = 1
     delay = 25
@@ -1401,7 +1779,6 @@ def dropDisc(column,color):
     while run_dd:
 
         clock.tick(5)   # experimental
-        #pygame.time.delay(5000)
 
         if squares2dArray[1,column] == 0:
             #squaresArray[column].hilite = False
@@ -1441,87 +1818,20 @@ def dropDisc(column,color):
             run_dd = 0
         elif squares2dArray[5,column] != 0:
             run_dd = 0
+
     update2dArray()
-    #print("dropDisc")
-    #print(squares2dArray)
     dropSound.play()  #sfx_sounds_impact6.wav
-
-
-
-#------------------------------------------------------
-def fullColumnCheck():
-
-    global playColumn
-
-    # check for full columns here...
-    # then what?
-    # temporary...
-    print("ai check for full columns...")  # debug
-    print("playColumn = ",playColumn)   # debug
-    print(squares2dArray)
-    if squares2dArray[0,playColumn] != 0:  # column is full
-        if leftRight == 0:  # left
-            for i in range(boardCols):
-                if 0 <= (playColumn - i):
-                    if squares2dArray[0,playColumn - i] == 0:  # column is empty
-                        playColumn = playColumn - i
-                elif (playColumn + i) < boardCols:
-                    if squares2dArray[0,playColumn + i] == 0:  # column is empty
-                        playColumn = playColumn + i
-        elif leftRight == 1:  # right
-            for i in range(boardCols):
-                if (playColumn + i) < boardCols:
-                    if squares2dArray[0,playColumn + i] == 0:  # column is empty
-                        playColumn = playColumn + i
-                elif 0 <= (playColumn - i):
-                    if squares2dArray[0,playColumn - i] == 0:  # column is empty
-                        playColumn = playColumn - i
-
-#        if leftRight == 0:  # left
-##        if playColumn == 0:
-#            for i in range(boardCols):
-#                if squares2dArray[0,i] == 0:  # column is empty
-#                    playColumn = i
-##                    run_ai = False
-#                else:
-##                    winner = 2   # draw
-##                    run_ai = False
-#                    winnerCheck()
-#        elif leftRight == 1:  # right
-##        elif playColumn == 6:
-#            for i in range(boardCols-1,-1):
-#                if squares2dArray[0,i] == 0:  # column is empty
-#                    playColumn = i
-##                    run_ai = False
-#                else:
-##                    winner = 2   # draw
-##                    run_ai = False
-#                    winnerCheck()
-
-#            if leftRight == 0:  # left
-#                if squares2dArray[0,playColumn - 1] == 0:  # column is empty
-#                    playColumn = playColumn - 1
-#                elif squares2dArray[0,playColumn + 1] == 0:  # column is empty
-#                    playColumn = playColumn + 1
-#            elif leftRight == 1:  # right
-#                if squares2dArray[0,playColumn + 1] == 0:  # column is empty
-#                    playColumn = playColumn + 1
-#                elif squares2dArray[0,playColumn - 1] == 0:  # column is empty
-#                    playColumn = playColumn - 1
-
-#        redrawWindow()
-    print("fullColumnCheck exit: playColumn = ",playColumn)   # debug
-
-# end fullColumnCheck()
+    # end dropDisc
 
 
 #------------------------------------------------------
 def winnerCheck():
 
     print("winnerCheck")
-    run_wc = True
+
     global winner
     numInRow = 0
+    run_wc = True
 
     while run_wc:
         # check for board full draw
@@ -1530,7 +1840,7 @@ def winnerCheck():
             for j in range(boardCols):
                 if squares2dArray[i,j] == 0:
                     winner = 0
-                    run_wc = False
+                    #run_wc = False
         # check rows
         numInRow = 0
         for i in range(boardRows):
@@ -1538,7 +1848,7 @@ def winnerCheck():
                 numInRow = squares2dArray[i,j] + squares2dArray[i,j+1] + squares2dArray[i,j+2] + squares2dArray[i,j+3]
                 if numInRow == 4:
                     winner = 1
-                    print("winner = ",winner)
+                    print("winner =",winner)
                     # hilite winning discs
                     clearSquaresHilite()
                     squaresArray[i*boardCols + j].hilite = True
@@ -1548,7 +1858,7 @@ def winnerCheck():
                     run_wc = False
                 elif numInRow == -4:
                     winner = -1
-                    print("winner = ",winner)
+                    print("winner =",winner)
                     # hilite winning discs
                     clearSquaresHilite()
                     squaresArray[i*boardCols + j].hilite = True
@@ -1563,7 +1873,7 @@ def winnerCheck():
                 numInRow = squares2dArray[i,j] + squares2dArray[i+1,j] + squares2dArray[i+2,j] + squares2dArray[i+3,j]
                 if numInRow == 4:
                     winner = 1
-                    print("winner = ",winner)
+                    print("winner =",winner)
                     # hilite winning discs
                     clearSquaresHilite()
                     squaresArray[i*boardCols + j].hilite = True
@@ -1573,7 +1883,7 @@ def winnerCheck():
                     run_wc = False
                 elif numInRow == -4:
                     winner = -1
-                    print("winner = ",winner)
+                    print("winner =",winner)
                     # hilite winning discs
                     clearSquaresHilite()
                     squaresArray[i*boardCols + j].hilite = True
@@ -1588,7 +1898,7 @@ def winnerCheck():
                 numInRow = squares2dArray[i,j] + squares2dArray[i+1,j+1] + squares2dArray[i+2,j+2] + squares2dArray[i+3,j+3]
                 if numInRow == 4:
                     winner = 1
-                    print("winner = ",winner)
+                    print("winner =",winner)
                     # hilite winning discs
                     clearSquaresHilite()
                     squaresArray[i*boardCols + j].hilite = True
@@ -1598,7 +1908,7 @@ def winnerCheck():
                     run_wc = False
                 elif numInRow == -4:
                     winner = -1
-                    print("winner = ",winner)
+                    print("winner =",winner)
                     # hilite winning discs
                     clearSquaresHilite()
                     squaresArray[i*boardCols + j].hilite = True
@@ -1613,7 +1923,7 @@ def winnerCheck():
                 numInRow = squares2dArray[i,j] + squares2dArray[i+1,j-1] + squares2dArray[i+2,j-2] + squares2dArray[i+3,j-3]
                 if numInRow == 4:
                     winner = 1
-                    print("winner = ",winner)
+                    print("winner =",winner)
                     # hilite winning discs
                     clearSquaresHilite()
                     squaresArray[i*boardCols + j].hilite = True
@@ -1623,7 +1933,7 @@ def winnerCheck():
                     run_wc = False
                 elif numInRow == -4:
                     winner = -1
-                    print("winner = ",winner)
+                    print("winner =",winner)
                     # hilite winning discs
                     clearSquaresHilite()
                     squaresArray[i*boardCols + j].hilite = True
@@ -1632,7 +1942,7 @@ def winnerCheck():
                     squaresArray[(i+3)*boardCols + j-3].hilite = True
                     run_wc = False
 
-        print("winnerCheck end: winner = ",winner)
+        print("winnerCheck end: winner =",winner)
         run_wc = False
 
     # end winnerCheck()
@@ -1641,15 +1951,20 @@ def winnerCheck():
 #------------------------------------------------------
 def endgame():
 
+    global numPlayers
+    global turnPlayer    # turnPlayer = 1  # 1 or 2. Computer is player 1 if single player mode
+    global winner
+    global playCount
     global winsPlayer1
     global winsPlayer2
     global whoGoesFirst
-    #global replay    # RH still needed?
 
-    print("endgame whoGoesFirst = ",whoGoesFirst)
+    print("endgame winner =",winner)
+    print("endgame whoGoesFirst =",whoGoesFirst)
     whoGoesFirst = whoGoesFirst * -1   # alternate players
-    print("endgame whoGoesFirst = ",whoGoesFirst)
-    print("endgame winner = ",winner)
+    print("endgame whoGoesFirst =",whoGoesFirst)
+
+    playCount = 0   # a play is one round, i.e., computer and human each taking a turn
 
     redrawWindow()
     yesButton = Button((255,255,0), 1180,50,40,40,'Y')
@@ -1659,30 +1974,40 @@ def endgame():
 
     if winner == 1:
         winsPlayer2 = winsPlayer2 + 1
-        textmsg = "Player #2 wins!!!"
+        print("")
+        print("Player #2 wins!!!")
+        textmsg ="Player #2 wins!!!"
         text = font.render(textmsg,1,colorPlayer2)
         screen.blit(text, ((display_width/2)-190,25))
         twoBellsSound.play()
     elif winner == -1:
         winsPlayer1 = winsPlayer1 + 1
+        print("")
         if numPlayers == 1:
-            textmsg = "Computer wins!!!"
+            print("Computer wins!!!")
+            textmsg ="Computer wins!!!"
             alarmBellSound.play()
         elif numPlayers == 2:
-            textmsg = "Player #1 wins!!!"
+            print("Player #1 wins!!!")
+            textmsg ="Player #1 wins!!!"
             twoBellsSound.play()
         text = font.render(textmsg,1,colorPlayer1)
         screen.blit(text, ((display_width/2)-190,25))
     elif winner == 2:
-        textmsg = "It's a draw!!"
+        print("")
+        print("It's a draw!!")
+        textmsg ="It's a draw!!"
         text = font.render(textmsg,1,white)
         screen.blit(text, ((display_width/2)-190,25))
+
+    winner = 0    # 1 or 2, winning player
 
     pygame.display.update()
     pygame.time.wait(2000)
 
     redrawWindow()
-    textmsg = "Play again?"
+    print("Play again?")
+    textmsg ="Play again?"
     text = font.render(textmsg,1,white)
     screen.blit(text, ((display_width/2)-190,25))
     pygame.display.update()
@@ -1700,48 +2025,50 @@ def endgame():
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                print("quit selected")
                 run_end = False
                 pygame.quit()
                 sys.exit()
+
             keys = pygame.key.get_pressed()
             if keys[pygame.K_y]:  # supports upper & lower case
+                print("yes selected")
                 run_end = False
-                #replay = 1    # RH still needed?
                 if whoGoesFirst == 1:
-                    turnPlayer = 1    # 1 or 2, Computer is player 1 if single player mode
+                    turnPlayer = 1    # Computer is player 1 if single player mode
                 elif whoGoesFirst == -1:
-                    turnPlayer = 2    # 1 or 2, Computer is player 1 if single player mode
+                    turnPlayer = 2    # human
                 #initSquaresArray()
                 clearSquaresArray()
                 update2dArray()
-                # RH how to skip parts of this for replay?
-                #game_setup()
+                print("go to game_loop")
                 game_loop()
             if keys[pygame.K_n]:  # supports upper & lower case
+                print("no selected")
                 run_end = False
-                #replay = 0
                 pygame.quit()
                 sys.exit()
+
             pos = pygame.mouse.get_pos()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 click.play()
                 if yesButton.isOver(pos):
+                    print("yes selected")
                     run_end = False
-                    #replay = 1
                     if whoGoesFirst == 1:
-                        turnPlayer = 1    # 1 or 2, Computer is player 1 if single player mode
+                        turnPlayer = 1    # Computer is player 1 if single player mode
                     elif whoGoesFirst == -1:
-                        turnPlayer = 2    # 1 or 2, Computer is player 1 if single player mode
+                        turnPlayer = 2    # human
                     #initSquaresArray()
                     clearSquaresArray()
                     update2dArray()
-                    # RH how to skip parts of this for replay?
-                    #game_setup()
+                    print("go to game_loop")
                     game_loop()
                 if noButton.isOver(pos):
+                    print("no selected")
                     pygame.time.delay(500)
                     run_end = False
-                    #replay = 0
+                    #run_game = False   # debug
                     pygame.quit()
                     sys.exit()
             if event.type == pygame.MOUSEMOTION:
@@ -1760,44 +2087,43 @@ def endgame():
 def game_loop():
 
     print("")
-    print("game_loop = while run_game")
+    print("** begin game_loop **")
     print("")
-
-    pygame.event.clear()
-    redrawWindow()
 
     global numPlayers
     global turnPlayer    # turnPlayer = 1  # 1 or 2. Computer is player 1 if single player mode
     global winner        # winner = 0      # 1 or 2, winning player
     global playColumn    # playColumn = 3
     global playCount     # playCount = 0   # a play is one round, i.e. computer and human each taking a turn
-    # RH still needed?
-    #global replay        # 1 = yes, 0 = no
-
-    #replay = 0    # RH still needed?
 
     # debug:
     #turnPlayer = 2
-    print("numPlayers = ",numPlayers)
-    print("turnPlayer = ",turnPlayer)
-    print("winner = ",winner)
+    print("numPlayers =",numPlayers)
+    print("turnPlayer =",turnPlayer)
+    print("winner =",winner)
+
+    #print("** Computer's Turn **")
 
     font = pygame.font.SysFont('comicsansms', 40)
 
     shipsBellSound.play()
+    redrawWindow()
 
+    pygame.event.clear()
     run_game = True
 
     while run_game:
 
         #redrawWindow()
-        #print("while run_game =",run_game)   # debug
-        #print("turnPlayer = ",turnPlayer)   # debug
+        #print("while run_game =",run_game)  
+        #print("turnPlayer =",turnPlayer)  
         #clock.tick(5)   # debug
         clock.tick(30)
 
-    # is it computer's turn?
+        # is it computer's turn?
         if numPlayers == 1 and turnPlayer == 1:
+            print("")
+            print("** Computer's Turn **")
             textmsg = "Computer's Turn"
             font = pygame.font.SysFont('comicsansms', 40)
             text = font.render(textmsg,1,colorPlayer1)
@@ -1806,22 +2132,21 @@ def game_loop():
             pygame.time.wait(1200)
             computer_ai()
             fullColumnCheck()
-            # change to support color choice:
-            #colorPlayer1
             squaresArray[playColumn].disc = colorPlayer1
-            print("squaresArray",playColumn,".disc =",colorPlayer1)   # debug
+            print("squaresArray",playColumn,".disc =",colorPlayer1)  
             redrawWindow()
             dropDisc(playColumn,squaresArray[playColumn].disc)
-            # check for victory here...
             winnerCheck()
             redrawWindow()
             if winner != 0:
                 run_game = False
                 endgame()    # declare winner & play again?
             # switch players if no winner:
+            print("")
+            print("** Player #2's Turn **")
             turnPlayer = 2
 
-    # is it human's turn?
+        # is it human's turn?
         if turnPlayer == 2 or numPlayers == 2:
             font = pygame.font.SysFont('comicsansms', 40)  # comicsansms arial
             if turnPlayer == 1:
@@ -1850,28 +2175,27 @@ def game_loop():
                     for i in range (7):
                         if squaresArray[i].isOver(pos):
                             playColumn = i
-                            print("playColumn = ",playColumn)   # debug
-                            #print(squares2dArray)   # debug
+                            print("playColumn =",playColumn)  
+                            #print(squares2dArray)  
                             # error checking here....
-                            if squares2dArray[0,playColumn] != 0:
-                            #if squaresArray[i].disc != black:    #'black': fails, don't use colors as a string
-                                print("game_loop")   # debug
-                                print("turnPlayer =",turnPlayer)   # debug
-                                print(squares2dArray)   # debug
+                            if squares2dArray[0,playColumn] != 0:    # error
+                                print("# error #")  
+                                print("turnPlayer =",turnPlayer)  
+                                print(squares2dArray)  
                                 honk3Sound.play()
-                                print("squaresArray",i,".disc =",squaresArray[i].disc)   # debug
+                                print("squaresArray",i,".disc =",squaresArray[i].disc)  
                             elif squaresArray[i].disc == black:
                                 if turnPlayer == 1:
                                     squaresArray[i].disc = colorPlayer1
-                                    print("squaresArray",i,".disc =",colorPlayer1)   # debug
+                                    print("squaresArray",i,".disc =",colorPlayer1)  
                                 elif turnPlayer == 2:
                                     squaresArray[i].disc = colorPlayer2
-                                    print("squaresArray",i,".disc =",colorPlayer2)   # debug
+                                    print("squaresArray",i,".disc =",colorPlayer2)  
                                 redrawWindow()
                                 #update2dArray()
-                                print("game_loop")   # debug
-                                print("turnPlayer =",turnPlayer)   # debug
-                                print(squares2dArray)   # debug
+                                #print("game_loop")  
+                                print("turnPlayer =",turnPlayer)  
+                                print(squares2dArray)  
                                 playCount = playCount + 1
                                 squaresArray[i].hilite = False   # experimental
                                 dropDisc(playColumn,squaresArray[i].disc)
@@ -1888,6 +2212,8 @@ def game_loop():
                                         turnPlayer = 2
                                     else:
                                         turnPlayer = 1
+                    print("** Computer's Turn **")
+
     # end game_loop()
 
 
