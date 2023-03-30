@@ -11,10 +11,12 @@ update: bug fixes: instructions, play again flicker (maybe fixed), game exit err
 
 update: play again flicker fix (?)
 
-update 220303: added delay to discdrop to avoid speed of light discs on fast machines!
+update 220303: added delay to disc drop to avoid speed of light discs on fast machines!
 
 update 220320: added alternating first turn between players/computer for fairness
 
 update 230321: added more sounds: mouse clicks, bells, background sound. Also fixed replay, removed redundant prompts.
 
 update 230326: significant improvements to computer 'AI' algorithms.
+
+update 230329: fixed a couple of bugs. Thanks to Shannon for finding them!
