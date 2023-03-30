@@ -4,7 +4,7 @@
 # that so engrossed Captain Cook during his long
 # voyages that his crew gave it that name
 #===================================================
-# 3/26/23, 10:40 AM
+# 3/28/23, 10:30 PM
 
 # The Rules of Connect 4:
 # Players must connect 4 of the same colored discs in a row to win.
@@ -13,7 +13,6 @@
 # Players take turns going first.
 
 '''
-
 to do:
 
 add selection for beginner or advanced mode
@@ -116,6 +115,7 @@ boardStartX = 420
 boardStartY = 130
 
 ### game play variables ###
+easyMode     = 0  # 1 for easy mode, 0 for normal (tougher) mode
 numPlayers   = 2  # 1 for human vs. computer, 2 for human vs. human
 whoGoesFirst = 1  # 1 (computer or player #1) or -1 (human or player #2). Alternates for now (per the rules), but should loser always go first? optional?
 turnPlayer   = 1  # 1 or 2. Computer is player 1 if single player mode
@@ -451,6 +451,7 @@ def game_setup():
     print("game_setup")
 
     # reset game variables:
+    global easyMode
     global numPlayers
     global whoGoesFirst
     global turnPlayer
@@ -744,6 +745,7 @@ def computer_ai():
 
     # bring in game loop move code here for computer?
 
+    global easyMode
     global debugHilite
     global playCount
     global leftRight
@@ -870,6 +872,9 @@ def computer_ai():
         #boardRows = 6
         #boardCols = 7
 
+        # if easyMode == 0:    # skip if easyMode turned on (1)
+
+
         print("")
         print("## gap check 3/4:")
         # scan board, add up how many 3/4 gap plays there are for both ai & human, use in algo
@@ -904,8 +909,14 @@ def computer_ai():
                                 playColumn = j + k
                                 print("ai 3/4 gap: playColumn =",playColumn)
                                 run_ai = False
-                            elif squares2dArray[(i + 1),(j + k)] == 0:    # avoid col
-                                avoidColumns[j + k] = 1
+                            elif squares2dArray[(i + 1),(j + k)] == 0:    # avoid col?
+                                if i <= 3:
+                                    if squares2dArray[(i + 2),(j + k)] != 0:    # avoid col
+                                        avoidColumns[j + k] = 1
+                                    else:
+                                        playColumn = j + k
+                                        print("ai 3/4 gap: playColumn =",playColumn)
+                                        run_ai = False
 
         # check diagonals right, starting from top left corner
         numInRow = 0
@@ -917,7 +928,11 @@ def computer_ai():
                     print("numInRow =",numInRow) 
                     for k in range(4):
                         if squares2dArray[i + k,j + k] == 0:
-                            if squares2dArray[(i + k + 1),(j + k)] != 0:    # support to make 4iar
+                            if (i + k + 1) < 6 and squares2dArray[(i + k + 1),(j + k)] != 0:    # support to make 4iar
+                                playColumn = j + k
+                                print("ai 3/4 gap: playColumn =",playColumn)
+                                run_ai = False
+                            elif (i + k) == 5:    # support to make 4iar
                                 playColumn = j + k
                                 print("ai 3/4 gap: playColumn =",playColumn)
                                 run_ai = False
@@ -926,11 +941,15 @@ def computer_ai():
                     print("numInRow =",numInRow) 
                     for k in range(4):
                         if squares2dArray[i + k,j + k] == 0:
-                            if squares2dArray[(i + k + 1),(j + k)] != 0:    # support to fill gap (block it)
+                            if (i + k + 1) < 6 and squares2dArray[(i + k + 1),(j + k)] != 0:    # support to fill gap (block it)
                                 playColumn = j + k
                                 print("ai 3/4 gap: playColumn =",playColumn)
                                 run_ai = False
-                            elif squares2dArray[(i + k + 1),(j + k)] == 0:    # avoid col
+                            elif (i + k) == 5:    # support to make 4iar
+                                playColumn = j + k
+                                print("ai 3/4 gap: playColumn =",playColumn)
+                                run_ai = False
+                            elif (i + k + 1) < 6 and squares2dArray[(i + k + 1),(j + k)] == 0:    # avoid col
                                 avoidColumns[j + k] = 1
 
         # check diagonals left, starting from top right corner
@@ -943,8 +962,12 @@ def computer_ai():
                     print("numInRow =",numInRow) 
                     for k in range(4):
                         if squares2dArray[i + k,j - k] == 0:
-                            if squares2dArray[(i + k + 1),(j - k)] != 0:    # support to make 4iar
+                            if (i + k + 1) < 6 and squares2dArray[(i + k + 1),(j - k)] != 0:    # support to make 4iar
                                 playColumn = j - k
+                                print("ai 3/4 gap: playColumn =",playColumn)
+                                run_ai = False
+                            elif (i + k) == 5:    # support to make 4iar
+                                playColumn = j + k
                                 print("ai 3/4 gap: playColumn =",playColumn)
                                 run_ai = False
                 # human
@@ -952,12 +975,19 @@ def computer_ai():
                     print("numInRow =",numInRow) 
                     for k in range(4):
                         if squares2dArray[i + k,j - k] == 0:
-                            if squares2dArray[(i + k + 1),(j - k)] != 0:    # support to fill gap (block it)
+                            if (i + k + 1) < 6 and squares2dArray[(i + k + 1),(j - k)] != 0:    # support to fill gap (block it)
                                 playColumn = j - k
                                 print("ai 3/4 gap: playColumn =",playColumn)
                                 run_ai = False
-                            elif squares2dArray[(i + k + 1),(j - k)] == 0:    # avoid col
+                            elif (i + k) == 5:    # support to make 4iar
+                                playColumn = j + k
+                                print("ai 3/4 gap: playColumn =",playColumn)
+                                run_ai = False
+                            elif (i + k + 1) < 6 and squares2dArray[(i + k + 1),(j - k)] == 0:    # avoid col
                                 avoidColumns[j + k] = 1
+
+
+        # if easyMode == 0:    # skip if easyMode turned on (1)
 
         print("## check 3iar:")
         # scan board, add up how many 3iar for both ai & human, use in algo
@@ -1043,6 +1073,7 @@ def computer_ai():
                             playColumn = j
                             print("ai 3iar cols: playColumn =",playColumn)
                             run_ai = False
+
         # check diagonals right
         numInRow = 0
         for i in range(4):
@@ -1155,6 +1186,10 @@ def computer_ai():
                                         run_ai = False
                                     elif squares2dArray[(i + 4),(j - 3)] == 0:  # support to make 4iar
                                         avoidColumns[j - 3] = 1
+
+
+        # if easyMode == 1:    # clear array if easyMode turned on (1)
+        #avoidColumns = [0,0,0,0,0,0,0]    # init array
 
         # debug
         print("")
@@ -1386,6 +1421,9 @@ def computer_ai():
                                             print("ai 2iar diagonals left: playColumn =",playColumn) 
                                             run_ai = False
 
+
+        # if easyMode == 0:    # skip if easyMode turned on (1)
+
         print("## check 3iar: second pass")
         # scan board, add up how many 3iar for both ai & human, use in algo
         # check rows
@@ -1399,9 +1437,6 @@ def computer_ai():
                     if 0 <= (j - 1):
                         print("ai 3iar rows: j-1")
                         if squares2dArray[i,(j - 1)] == 0:  # open to make 4iar
-                            squaresArray[i*boardCols + j].hilite = debugHilite
-                            squaresArray[i*boardCols + j+1].hilite = debugHilite
-                            squaresArray[i*boardCols + j+2].hilite = debugHilite
                             if i == 5:
                                 playColumn = j - 1
                                 print("ai 3iar rows: playColumn =",playColumn)
@@ -1414,9 +1449,6 @@ def computer_ai():
                     if (j + 3) < boardCols:
                         print("ai 3iar rows: j+3")
                         if squares2dArray[i,(j + 3)] == 0:  # open to make 4iar
-                            squaresArray[i*boardCols + j].hilite = debugHilite
-                            squaresArray[i*boardCols + j+1].hilite = debugHilite
-                            squaresArray[i*boardCols + j+2].hilite = debugHilite
                             if i == 5:
                                 playColumn = j + 3
                                 print("ai 3iar rows: playColumn =",playColumn) 
@@ -1432,9 +1464,6 @@ def computer_ai():
                     if 0 <= (j - 1):
                         print("ai 3iar rows: j-1") 
                         if squares2dArray[i,(j - 1)] == 0:  # open to block 4iar
-                            squaresArray[i*boardCols + j].hilite = debugHilite
-                            squaresArray[i*boardCols + j+1].hilite = debugHilite
-                            squaresArray[i*boardCols + j+2].hilite = debugHilite
                             if i == 5:
                                 playColumn = j - 1
                                 run_ai = False
@@ -1447,9 +1476,6 @@ def computer_ai():
                     if (j + 3) < boardCols:
                         print("ai 3iar rows: j+3")
                         if squares2dArray[i,(j + 3)] == 0:  # open to block 4iar
-                            squaresArray[i*boardCols + j].hilite = debugHilite
-                            squaresArray[i*boardCols + j+1].hilite = debugHilite
-                            squaresArray[i*boardCols + j+2].hilite = debugHilite
                             if i == 5:
                                 playColumn = j + 3
                                 print("ai 3iar colsrows: playColumn =",playColumn) 
@@ -1471,9 +1497,6 @@ def computer_ai():
                     if 0 <= (i - 1):
                         print("ai 3iar cols: i-1")
                         if squares2dArray[i - 1,j] == 0:  # open to make 4iar
-                            squaresArray[i*boardCols + j].hilite = debugHilite
-                            squaresArray[(i+1)*boardCols + j].hilite = debugHilite
-                            squaresArray[(i+2)*boardCols + j].hilite = debugHilite
                             playColumn = j
                             print("ai 3iar cols: playColumn =",playColumn)
                             run_ai = False
@@ -1482,12 +1505,10 @@ def computer_ai():
                     if 0 <= (i - 1):
                         print("ai 3iar cols: i-1")
                         if squares2dArray[i - 1,j] == 0:  # open to make 4iar
-                            squaresArray[i*boardCols + j].hilite = debugHilite
-                            squaresArray[(i+1)*boardCols + j].hilite = debugHilite
-                            squaresArray[(i+2)*boardCols + j].hilite = debugHilite
                             playColumn = j
                             print("ai 3iar cols: playColumn =",playColumn)
                             run_ai = False
+
         # check diagonals right
         numInRow = 0
         for i in range(4):
@@ -1499,9 +1520,6 @@ def computer_ai():
                         if 0 <= (j - 1):
                             print("ai 3iar diagonals right: j-1") 
                             if squares2dArray[(i - 1),(j - 1)] == 0:  # open to make 4iar
-                                squaresArray[i*boardCols + j].hilite = debugHilite
-                                squaresArray[(i+1)*boardCols + j+1].hilite = debugHilite
-                                squaresArray[(i+2)*boardCols + j+2].hilite = debugHilite
                                 if squares2dArray[i,(j - 1)] != 0:  # support to make 4iar
                                     playColumn = j - 1
                                     print("ai 3iar diagonals right: playColumn =",playColumn) 
@@ -1510,9 +1528,6 @@ def computer_ai():
                         if (j + 3) < boardCols:
                             print("ai 3iar diagonals right: j+3") 
                             if squares2dArray[(i + 3),(j + 3)] == 0:  # open to make 4iar
-                                squaresArray[i*boardCols + j].hilite = debugHilite
-                                squaresArray[(i+1)*boardCols + j+1].hilite = debugHilite
-                                squaresArray[(i+2)*boardCols + j+2].hilite = debugHilite
                                 if (i + 3) == 5:
                                     playColumn = j + 3
                                     print("ai 3iar diagonals right: playColumn =",playColumn) 
@@ -1528,9 +1543,6 @@ def computer_ai():
                         if 0 <= (j - 1):
                             print("ai 3iar diagonals right: j-1") 
                             if squares2dArray[(i - 1),(j - 1)] == 0:  # open to make 4iar
-                                squaresArray[i*boardCols + j].hilite = debugHilite
-                                squaresArray[(i+1)*boardCols + j+1].hilite = debugHilite
-                                squaresArray[(i+2)*boardCols + j+2].hilite = debugHilite
                                 if squares2dArray[i,(j - 1)] != 0:  # support to make 4iar
                                     playColumn = j - 1
                                     print("ai 3iar diagonals right: playColumn =",playColumn) 
@@ -1541,9 +1553,6 @@ def computer_ai():
                         if (j + 3) < boardCols:
                             print("ai 3iar diagonals right: j+3") 
                             if squares2dArray[(i + 3),(j + 3)] == 0:  # open to make 4iar
-                                squaresArray[i*boardCols + j].hilite = debugHilite
-                                squaresArray[(i+1)*boardCols + j+1].hilite = debugHilite
-                                squaresArray[(i+2)*boardCols + j+2].hilite = debugHilite
                                 if (i + 3) == 5:
                                     playColumn = j + 3
                                     print("ai 3iar diagonals right: playColumn =",playColumn) 
@@ -1563,10 +1572,6 @@ def computer_ai():
                 # ai
                 if numInRow == -3:  # ai
                     print("numInRow =",numInRow) 
-                    # debug: hilite winning discs (remove this later)
-                    squaresArray[i*boardCols + j].hilite = debugHilite
-                    squaresArray[(i+1)*boardCols + j-1].hilite = debugHilite
-                    squaresArray[(i+2)*boardCols + j-2].hilite = debugHilite
                     if 0 <= (i - 1):
                         if (j + 1) < boardCols:
                             print("ai 3iar diagonals left: i-1") 
@@ -1591,10 +1596,6 @@ def computer_ai():
                 # human
                 elif numInRow == 3:    # human
                     print("numInRow =",numInRow) 
-                    # debug: hilite winning discs (remove this later)
-                    squaresArray[i*boardCols + j].hilite = debugHilite
-                    squaresArray[(i+1)*boardCols + j-1].hilite = debugHilite
-                    squaresArray[(i+2)*boardCols + j-2].hilite = debugHilite
                     if 0 <= (i - 1):
                         if (j + 1) < boardCols:
                             print("ai 3iar diagonals left: i-1") 
@@ -1620,6 +1621,8 @@ def computer_ai():
                                         run_ai = False
                                     elif squares2dArray[(i + 4),(j - 3)] == 0:  # support to make 4iar
                                         avoidColumns[j - 3] = 1
+
+        # if easyMode == 0:    # skip if easyMode turned on (1)
 
         print("")
         print("## gap check 3/4: second pass")
@@ -1656,7 +1659,13 @@ def computer_ai():
                                 print("ai 3/4 gap: playColumn =",playColumn)
                                 run_ai = False
                             elif squares2dArray[(i + 1),(j + k)] == 0:    # avoid col
-                                avoidColumns[j + k] = 1
+                                if i <= 3:
+                                    if squares2dArray[(i + 2),(j + k)] != 0:    # avoid col
+                                        avoidColumns[j + k] = 1
+                                    else:
+                                        playColumn = j + k
+                                        print("ai 3/4 gap: playColumn =",playColumn)
+                                        run_ai = False
 
         # check diagonals right, starting from top left corner
         numInRow = 0
@@ -1668,7 +1677,11 @@ def computer_ai():
                     print("numInRow =",numInRow) 
                     for k in range(4):
                         if squares2dArray[i + k,j + k] == 0:
-                            if squares2dArray[(i + k + 1),(j + k)] != 0:    # support to make 4iar
+                            if (i + k + 1) < 6 and squares2dArray[(i + k + 1),(j + k)] != 0:    # support to make 4iar
+                                playColumn = j + k
+                                print("ai 3/4 gap: playColumn =",playColumn)
+                                run_ai = False
+                            elif (i + k) == 5:    # support to make 4iar
                                 playColumn = j + k
                                 print("ai 3/4 gap: playColumn =",playColumn)
                                 run_ai = False
@@ -1677,11 +1690,15 @@ def computer_ai():
                     print("numInRow =",numInRow) 
                     for k in range(4):
                         if squares2dArray[i + k,j + k] == 0:
-                            if squares2dArray[(i + k + 1),(j + k)] != 0:    # support to fill gap (block it)
+                            if (i + k + 1) < 6 and squares2dArray[(i + k + 1),(j + k)] != 0:    # support to fill gap (block it)
                                 playColumn = j + k
                                 print("ai 3/4 gap: playColumn =",playColumn)
                                 run_ai = False
-                            elif squares2dArray[(i + k + 1),(j + k)] == 0:    # avoid col
+                            elif (i + k) == 5:    # support to make 4iar
+                                playColumn = j + k
+                                print("ai 3/4 gap: playColumn =",playColumn)
+                                run_ai = False
+                            elif (i + k + 1) < 6 and squares2dArray[(i + k + 1),(j + k)] == 0:    # avoid col
                                 avoidColumns[j + k] = 1
 
         # check diagonals left, starting from top right corner
@@ -1694,8 +1711,12 @@ def computer_ai():
                     print("numInRow =",numInRow) 
                     for k in range(4):
                         if squares2dArray[i + k,j - k] == 0:
-                            if squares2dArray[(i + k + 1),(j - k)] != 0:    # support to make 4iar
+                            if (i + k + 1) < 6 and squares2dArray[(i + k + 1),(j - k)] != 0:    # support to make 4iar
                                 playColumn = j - k
+                                print("ai 3/4 gap: playColumn =",playColumn)
+                                run_ai = False
+                            elif (i + k) == 5:    # support to make 4iar
+                                playColumn = j + k
                                 print("ai 3/4 gap: playColumn =",playColumn)
                                 run_ai = False
                 # human
@@ -1703,11 +1724,15 @@ def computer_ai():
                     print("numInRow =",numInRow) 
                     for k in range(4):
                         if squares2dArray[i + k,j - k] == 0:
-                            if squares2dArray[(i + k + 1),(j - k)] != 0:    # support to fill gap (block it)
+                            if (i + k + 1) < 6 and squares2dArray[(i + k + 1),(j - k)] != 0:    # support to fill gap (block it)
                                 playColumn = j - k
                                 print("ai 3/4 gap: playColumn =",playColumn)
                                 run_ai = False
-                            elif squares2dArray[(i + k + 1),(j - k)] == 0:    # avoid col
+                            elif (i + k) == 5:    # support to make 4iar
+                                playColumn = j + k
+                                print("ai 3/4 gap: playColumn =",playColumn)
+                                run_ai = False
+                            elif (i + k + 1) < 6 and squares2dArray[(i + k + 1),(j - k)] == 0:    # avoid col
                                 avoidColumns[j + k] = 1
 
         # debug
@@ -1722,50 +1747,50 @@ def computer_ai():
 
 
 #------------------------------------------------------
-def fullColumnCheck():    # check for full column move
+def fullColumnCheck():
+
+    # check for full column move, if full:
+    # search for an open column
+    # added avoidColumn array checking
 
     global playColumn
     global avoidColumns
-
-    # this is just a dumb search for an open column
-    # added avoidColumn array checking
-    # do I still need this?
+    global boardCols
 
     print("")
     print("ai check for full columns...") 
     print("playColumn =",playColumn)  
     print(squares2dArray)
+
     if squares2dArray[0,playColumn] != 0:    # column is full
-        print("** column is full, searching for an open column...")    # to see if I still need this function
+        print("** column is full, searching for an open column...")    # to see if I still need this function (I do)
         # debug
         print("# avoidColumns =",avoidColumns)
         if leftRight == 0:  # left
             for i in range(boardCols):
-                if 0 <= (playColumn - i):
-                    if squares2dArray[0,playColumn - i] == 0:  # column top is empty
-                        if avoidColumns[playColumn - i] == 0:
-                            playColumn = playColumn - i
-                            break
-                elif (playColumn + i) < boardCols:
-                    if squares2dArray[0,playColumn + i] == 0:  # column top is empty
-                        if avoidColumns[playColumn + i] == 0:
-                            playColumn = playColumn + i
-                            break
+                if squares2dArray[0,i] == 0:    # column top is empty
+                    if avoidColumns[i] == 0:
+                        playColumn = i
+                        break
+            if squares2dArray[0,playColumn] != 0:    # column is still full
+                for i in range(boardCols):
+                    if squares2dArray[0,i] == 0:    # column top is empty
+                        playColumn = i
+                        break
         elif leftRight == 1:  # right
-            for i in range(boardCols):
-                if (playColumn + i) < boardCols:
-                    if squares2dArray[0,playColumn + i] == 0:  # column top is empty
-                        if avoidColumns[playColumn + i] == 0:
-                            playColumn = playColumn + i
-                            break
-                elif 0 <= (playColumn - i):
-                    if squares2dArray[0,playColumn - i] == 0:  # column top is empty
-                        if avoidColumns[playColumn - i] == 0:
-                            playColumn = playColumn - i
-                            break
+            for i in range(boardCols,0,-1):
+                if squares2dArray[0,i-1] == 0:    # column top is empty
+                    if avoidColumns[i-1] == 0:
+                        playColumn = i -1
+                        break
+            if squares2dArray[0,playColumn] != 0:    # column is still full
+                for i in range(boardCols,0,-1):
+                    if squares2dArray[0,i-1] == 0:    # column top is empty
+                        playColumn = i -1
+                        break
 
-    print("fullColumnCheck exit: playColumn =",playColumn)   # debug
-    # end fullColumnCheck()
+    print("# fullColumnCheck exit: playColumn =",playColumn)   # debug
+# end fullColumnCheck()
 
 
 #------------------------------------------------------
